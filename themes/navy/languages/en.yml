@@ -1,0 +1,37 @@
+menu:
+  docs: Docs
+  api: API
+  downloads: Downloads
+
+index:
+  get_started: Get started
+  api_reference: Read API Reference
+
+page:
+  contents: Contents
+  back_to_top: Back to Top
+  improve: Improve this doc
+  prev: Prev
+  next: Next
+  last_updated: "Last updated: %s"
+
+sidebar:
+  docs:
+    getting_started: Getting Started
+    overview: Overview
+    setup: Setup
+    configuration: Configuration
+    
+    labs: Labs
+    lab1: Getting Started and Setup
+    lab2: Listeners and Parsing
+    lab3: Streamers
+    lab4: Statistics
+    lab5: Integration
+    lab6: Clustering
+
+    miscellaneous: Miscellaneous
+    java: Java
+    leiningen: Leiningen
+    troubleshooting: Troubleshooting
+    contributing: Contributing

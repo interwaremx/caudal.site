@@ -1,0 +1,17 @@
+docs:
+  getting_started:
+    overview: index.html
+    setup: setup.html
+    configuration: configuration.html
+  labs:
+    lab1: lab1.html
+    lab2: lab2.html
+    lab3: lab3.html
+    lab4: lab4.html
+    lab5: lab5.html
+    lab6: lab6.html
+  miscellaneous:
+    java: java.html
+    leiningen: leiningen.html
+    troubleshooting: troubleshooting.html
+    contributing: contributing.html

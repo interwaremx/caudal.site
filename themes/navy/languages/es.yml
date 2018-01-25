@@ -1,0 +1,40 @@
+menu:
+  docs: Documentación
+  api: API
+  downloads: Descargas
+  plugins: Plugins
+  themes: Themes
+  search: Search
+
+index:
+  get_started: Comienza ahora
+  api_reference: Leer la Referencia API
+
+page:
+  contents: Contenido
+  back_to_top: Volver arriba
+  improve: Mejorar este documento
+  prev: Previo
+  next: Siguiente
+  last_updated: "Última actualización: %s"
+
+sidebar:
+  docs:
+    getting_started: Comenzando
+    overview: Resumen
+    setup: Instalación
+    configuration: Configuración
+
+    labs: Guías
+    lab1: Instalación
+    lab2: Escuchas y Parseo
+    lab3: Streamers
+    lab4: Estadísticas
+    lab5: Integración
+    lab6: Clustering
+
+    miscellaneous: Miscellaneous
+    java: Java
+    leiningen: Leiningen
+    troubleshooting: Solución de Problemas
+    contributing: Contribuir
