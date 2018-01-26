@@ -4,7 +4,7 @@
 
 Install dependencies as follow:
 ```
-git clone https://bitbucket.org/arpiw/caudal-wiki.git
+git clone https://github.com/interwaremx/caudal-wiki
 cd caudal-wiki
 npm install
 ```
