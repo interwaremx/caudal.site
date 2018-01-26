@@ -1,2 +1,0 @@
-title: Solución de Problemas
----
