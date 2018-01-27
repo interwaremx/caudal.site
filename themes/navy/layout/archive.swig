@@ -1,7 +1,6 @@
 {% set page.title = 'News' %}
 <div id="content-wrap">
   <div class="wrapper">
-  <p>{{page.content}}</p>
     <div class="inner">
       {% for post in page.posts %}
         {% if loop.index == 1 %}
