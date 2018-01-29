@@ -1,6 +1,6 @@
 title: Documentación
 ---
-Bienvenido a la documentación de Caudal. Si encuentras algún problema usando Caudal, hecha un vistazo a la [sección de Solución de Problemas](troubleshooting.html), crea una incidencia en [GitHub](https://github.com/interwaremx/caudal/issues) o inicia una discusión en nuestro [Grupo de Google](https://groups.google.com/group/caudal).
+Bienvenido a la documentación de Caudal. Si encuentras algún problema usando Caudal, hecha un vistazo a la [sección de Solución de Problemas](troubleshooting.html) o crea una incidencia en [GitHub](https://github.com/interwaremx/caudal/issues).
 
 ## ¿Qué es Caudal?
 Caudal es una plataforma que analiza bitácoras de aplicación usando modelos predictivos en tiempo real con el fin de enriquecer la información para un monitoreo confiable y para sistemas de recomendaciones.
