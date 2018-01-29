@@ -23,8 +23,8 @@ Los *Streamers* definen funciones que serán aplicadas a cada evento dentro del 
 ## Instalando
 Obtén los últimos archivos binarios de la distribución de Caudal en la [sección de Descargas](/downloads)
 ```txt
-$ wget http://caudal.io/downloads/caudal-0.7.4.tgz
-$ tar xvfz caudal-0.7.4.tgz
+$ wget http://caudal.io/downloads/caudal-0.7.4-SNAPSHOT.tar.gz
+$ tar xzvf caudal-0.7.4-SNAPSHOT.tar.gz
 ```
 
 ## Arrancando
