@@ -5,8 +5,8 @@ author: interwaremx
 language: en
 timezone: UTC
 
-url: https://hexo.io
-root: /caudal.docs
+url: https://interwaremx.github.io/caudal.docs
+root: /caudal.docs/
 permalink: news/:year/:month/:day/:title/
 archive_dir: news
 code_dir: downloads/code
