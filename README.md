@@ -12,8 +12,8 @@ npm install hexo-cli -g
 Install dependencies as follow:
 
 ``` bash
-$ git clone https://github.com/interwaremx/caudal-wiki.git
-$ cd caudal-wiki
+$ git clone https://github.com/interwaremx/caudal.site.git
+$ cd caudal.site
 $ npm install
 ```
 Generate:
