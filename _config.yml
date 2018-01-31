@@ -6,7 +6,7 @@ language: en
 timezone: UTC
 
 url: https://hexo.io
-root: /
+root: /caudal.docs
 permalink: news/:year/:month/:day/:title/
 archive_dir: news
 code_dir: downloads/code
