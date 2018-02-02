@@ -1,6 +1,6 @@
 title: Documentation
 ---
-Welcome to Caudal documentation. If you encounter any problems when using Caudal, have a look at the [troubleshooting guide](troubleshooting.html), raise an issue on [GitHub](https://github.com/interwaremx/caudal/issues) or start a topic on the [Google Group](https://groups.google.com/group/caudal).
+Welcome to Caudal documentation. If you encounter any problems when using Caudal, have a look at the [troubleshooting guide](troubleshooting.html) or raise an issue on [GitHub](https://github.com/interwaremx/caudal/issues).
 
 ## What is Caudal?
 Caudal is a platform that analyzes application logs using predictive models in real-time in order to get rich information for reliability monitoring and recomendation systems.
