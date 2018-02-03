@@ -14,79 +14,69 @@ Hay varias distribuciones binarias de Caudal. Se encuentran empaquetadas en form
 ### Descargando
 1. Obtén el archivo binario para la última distribición de Caudal desde la [sección de Descargas](http://caudal.io/downloads)
 ```txt
-$ wget http://caudal.io/downloads/caudal-0.7.4.tgz
+$ wget http://caudal.io/downloads/caudal-0.7.4-SNAPSHOT.tar.gz
 $ wget http://caudal.io/downloads/SHA256SUMS
 ```
 
 2. Verífica la integridad del archivo comparando el contenido del archivo **SHA256SUMS** contra el generado en la línea de comandos.
 ```txt Linux
-$ sha256sum caudal-0.7.4.tgz
-3e8116aaebb3d5c6362990fcdcc498f30ee06cb49b751979881088f07b40200f  caudal-0.7.4.tgz
+$ sha256sum caudal-0.7.4-SNAPSHOT.tar.gz
+3e8116aaebb3d5c6362990fcdcc498f30ee06cb49b751979881088f07b40200f  caudal-0.7.4-SNAPSHOT.tar.gz
 ```
  ```txt Mac OS X
- $ shasum -a 256 caudal-0.7.4.tgz
- 3e8116aaebb3d5c6362990fcdcc498f30ee06cb49b751979881088f07b40200f  caudal-0.7.4.tgz
+ $ shasum -a 256 caudal-0.7.4-SNAPSHOT.tar.gz
+ 3e8116aaebb3d5c6362990fcdcc498f30ee06cb49b751979881088f07b40200f  caudal-0.7.4-SNAPSHOT.tar.gz
  ```
 
 ### Desempaquetando
 1. Desempaqueta el archivo descargado, el cual crea el directorio de instalación.
 ```txt
-$ tar xvfz caudal-0.7.4.tgz
+tar xvfz caudal-0.7.4-SNAPSHOT.tar.gz
+x caudal/project.clj
 x caudal/bin/
+x caudal/bin/caudal
 x caudal/bin/start-caudal-with-els.sh
 x caudal/bin/start-caudal.sh
-x caudal/config/
-x caudal/config/caudal-config.clj
-...
-x caudal/log4j.properties
-x caudal/logs/
-x caudal/logs/caudal.log
+.............
+x caudal/lib/zookeeper-3.3.2.jar
+x caudal/lib/zookeeper-clj-0.9.1.jar
+x caudal/config/log4j2.xml
+x caudal/config/basic-config.clj
 ```
 2. Verifica el contenido del directorio
 ```txt
 $ cd caudal
 $ ls -l
-total 8
-drwxr-xr-x    4 axis  staff   136 Jan 27 12:13 bin
-drwxr-xr-x    3 axis  staff   102 Jan 27 13:50 config
-drwxr-xr-x    3 axis  staff   102 Jan 27 13:53 data
-drwxr-xr-x  137 axis  staff  4658 Jan 25 10:48 lib
--rw-r--r--    1 axis  staff   891 Jan 27 14:01 log4j.properties
-drwxr-xr-x    3 axis  staff   102 Jan 27 13:46 logs
+total 24
+drwxr-xr-x. 2 axis staff  4096 may 23  2017 bin
+drwxrwxr-x. 2 axis staff  4096 ene 29 10:23 config
+drwxr-xr-x. 2 axis staff 12288 may 24  2017 lib
+-rw-r--r--. 1 axis staff  3311 may 24  2017 project.clj
 ```
 
 
 ### Arrancando
 1. Inicia el servidor Caudal
 ```txt
-$ bin/start-caudal.sh -c config/caudal-config.clj
+$ bin/start-caudal.sh -c config/basic-config.clj
 Verifying JAVA instalation ...
 /usr/bin/java
 JAVA executable found in PATH
-JAVA Version : 1.8.0_91
-BIN path /projects/caudal/bin
-Starting Caudal from /projects/caudal
-                        __      __
-  _________ ___  ______/ /___ _/ /
- / ___/ __ `/ / / / __  / __ `/ /
-/ /__/ /_/ / /_/ / /_/ / /_/ / /
-\___/\__,_/\__,_/\__,_/\__,_/_/
+JAVA Version : 1.8.0_144
+BIN path /home/fvalencia/Documents/caudalBac/caudal/bin
+Starting Caudal from /home/fvalencia/Documents/caudalBac/caudal
+                        __      __ 
+  _________ ___  ______/ /___ _/ / 
+ / ___/ __ `/ / / / __  / __ `/ /  
+/ /__/ /_/ / /_/ / /_/ / /_/ / /   
+\___/\__,_/\__,_/\__,_/\__,_/_/    
+                                   
+mx.interware/caudal 0.7.4-SNAPSHOT
 
-Caudal 0.7.4
-log4j:WARN [stdout] should be System.out or System.err.
-log4j:WARN Using previously set target, System.out by default.
-log4j:WARN [stdout] should be System.out or System.err.
-log4j:WARN Using previously set target, System.out by default.
-SLF4J: Class path contains multiple SLF4J bindings.
-SLF4J: Found binding in [jar:file:/projects/caudal/lib/logback-classic-1.1.3.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/projects/caudal/lib/slf4j-log4j12-1.7.5.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
-SLF4J: Actual binding is of type [ch.qos.logback.classic.util.ContextSelectorStaticBinder]
-15:48:12.503 [main] INFO  mx.interware.caudal.core.starter-dsl - {:loading-dsl {:file config/caudal-config.clj}}
-15:48:13.916 [main] INFO  mx.interware.caudal.io.tcp-server - Starting server on port :  9900  ...
-15:48:13.986 [main] INFO  mx.interware.caudal.io.tailer-server - Tailing files :  (/projects/caudal/./data/input.txt)  ...
-15:48:13.998 [main] INFO  mx.interware.caudal.io.tailer-server - Channel created for file  input.txt  - > channel :  #object[clojure.core.async.impl.channels.ManyToManyChannel 0x33b082c5 clojure.core.async.impl.channels.ManyToManyChannel@33b082c5]
-15:48:14.086 [main] INFO  mx.interware.caudal.io.tailer-server - register-channels for tailer
+2018-01-29 10:58:35.453 INFO  [main] core.starter-dsl - {:caudal :start, :version "0.7.4-SNAPSHOT"}
+2018-01-29 10:58:35.456 INFO  [main] core.starter-dsl - {:loading-dsl {:file config/basic-config.clj}}
+2018-01-29 10:58:36.530 INFO  [main] io.tcp-server - Starting server on port :  9900  ...
+
 ```
 
 2. Abre otra terminal y envia un evento a través del canal **tcp** de Caudal corriendo en el puerto **9900** para estar seguro de que puede ser accedido
