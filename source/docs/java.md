@@ -19,7 +19,7 @@ Download latest Java SE Development Kit 8 release from its official download pag
 # tar xzfv jdk-8u111-linux-x64.tar.gz
 ```
 
- **Note:** *For production servers is highly recomended installing Java Server JRE. The Server JRE includes tools for JVM monitoring and tools commonly required for server applications, but does not include browser integration (the Java plug-in)*
+ **Note:** *For production servers is highly recomended installing Java Server JRE. The Server JRE includes tools for JVM monitoring and tools commonly required for application servers, but does not include browser integration (the Java plug-in)*
 
 ```#bash
 # cd /opt/
