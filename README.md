@@ -1,5 +1,7 @@
 # Caudal Official Website
 
+[ ![Codeship Status for interwaremx/caudal.site](https://app.codeship.com/projects/7bb82600-e82e-0135-aad7-3a826603cf39/status?branch=master)](https://app.codeship.com/projects/269660)
+
 ## Requirements
 
 NPM & Hexo
