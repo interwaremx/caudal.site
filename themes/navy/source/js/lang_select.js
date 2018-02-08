@@ -5,9 +5,9 @@
     var lang = this.value;
     var canonical = this.dataset.canonical;
     if (lang === 'en') lang = 'caudal.docs';
-    else if (lang) lang = 'caudal.docs/'+lang;
+    if (lang) lang = 'caudal.docs/' + lang;
 
-    location.href = '/' + lang + canonical;
+    location.href = '/' + lang + "/" + canonical;
   }
 
   document.getElementById('lang-select').addEventListener('change', changeLang);
