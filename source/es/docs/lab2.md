@@ -13,7 +13,7 @@ $ cd caudal-labs/
 ```
 
 2. Edita el archivo de configuración **config/caudal-config.clj** y configura un escucha de configuración en el puerto **9900**. El archivo debe contener lo que se muestra a continuación:
-```
+```clojure config/caudal-config.clj
 (ns caudal-labs)
 
 (require '[mx.interware.caudal.streams.common :refer :all])
@@ -87,7 +87,7 @@ Received event : {:tx "getOperation", :customer "Nile", :id 96, :ammount 57.1428
 
 ### Creando un escucha tailer
 1. Modifica el archivo de configuración **config/caudal-config.clj**  para que use un escucha de tailer para el archivo **data/input.txt**. Agrega el  escucha al final del archivo como se muestra a continuación:
-```
+```clojure config/caudal-config.clj
 ...
 
 (deflistener tcp-listener [{:type 'mx.interware.caudal.io.tcp-server
@@ -135,7 +135,7 @@ Received event : {:tx "findSales", :customer "Congo", :id 88, :key "XSA-89", :ca
 ### Creando un analizador personalizado
 
 1. Crea un archivo con *namespace* en **src/caudal_labs/parser.clj** y pon el siguiente código en el:
-```
+```clojure src/caudal_labs/parser.clj
 (ns caudal-labs.parser
   (:require [clojure.string :refer [split]]))
 
@@ -150,7 +150,7 @@ Received event : {:tx "findSales", :customer "Congo", :id 88, :key "XSA-89", :ca
 ```
 
 2. Modifica la definición del escucha *tailer* para que use la función **parse-piped-line** como parser.
-```
+```clojure config/caudal-config.clj
 ...
 (deflistener tailer [{:type 'mx.interware.caudal.io.tailer-server
                       :parameters {:parser      'caudal-labs.parser/parse-piped-line
