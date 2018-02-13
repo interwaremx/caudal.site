@@ -14,25 +14,10 @@ There are several Caudal binary distributions. They are packaged in the form of 
 
 ### Obtaining
 
-1. Get the binary file for the lastest Caudal distribution at [Caudal downloads](http://caudal.io/downloads)
+1. Get the binary file for the lastest Caudal distribution at [downloads](http://caudal.io/downloads) section
 
 ```
-$ wget http://caudal.io/downloads/caudal-0.7.4.tgz
-$ wget http://caudal.io/downloads/SHA256SUMS
-```
-
-2. Verify the integrity of the file by comparing contents of file **SHA256SUMS** against generated in the command line.
-
-On Linux
-```
-$ sha256sum caudal-0.7.4.tgz
-3e8116aaebb3d5c6362990fcdcc498f30ee06cb49b751979881088f07b40200f  caudal-0.7.4.tgz
-```
-
-On MAC OS X
-```
-$ shasum -a 256 caudal-0.7.4.tgz
-3e8116aaebb3d5c6362990fcdcc498f30ee06cb49b751979881088f07b40200f  caudal-0.7.4.tgz
+$ wget http://caudal.io/downloads/caudal-0.7.4-SNAPSHOT.tar.gz
 ```
 
 ### Unpacking
@@ -40,7 +25,7 @@ $ shasum -a 256 caudal-0.7.4.tgz
 1. Unpack downloaded file, wich creates the installation directory.
 
 ```
-$ tar xvfz caudal-0.7.4.tgz
+$ tar xzvf caudal-0.7.4-SNAPSHOT.tar.gz
 x caudal/bin/
 x caudal/bin/start-caudal-with-els.sh
 x caudal/bin/start-caudal.sh
