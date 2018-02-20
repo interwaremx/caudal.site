@@ -15,16 +15,16 @@ Download latest Java SE Development Kit 8 release from its official download pag
 
 ```#bash
 # cd /opt/
-# wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u111-b14/jdk-8u111-linux-x64.tar.gz"
-# tar xzfv jdk-8u111-linux-x64.tar.gz
+wget --no-check-certificate -c --header "Cookie: oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u161-b12/2f38c3b165be4555a1fa6e98c45e0808/jdk-8u161-linux-x64.tar.gz"
+# tar xzfv jdk-8u161-linux-x64.tar.gz
 ```
 
  **Note:** *For production servers is highly recomended installing Java Server JRE. The Server JRE includes tools for JVM monitoring and tools commonly required for application servers, but does not include browser integration (the Java plug-in)*
 
 ```#bash
 # cd /opt/
-# wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u111-b14/server-jre-8u111-linux-x64.tar.gz"
-# tar xzfv server-jre-8u111-linux-x64.tar.gz
+# wget --no-check-certificate -c --header "Cookie: oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u161-b12/2f38c3b165be4555a1fa6e98c45e0808/server-jre-8u161-linux-x64.tar.gz"
+# tar xzfv server-jre-8u161-linux-x64.tar.gz
 ```
 
 ### Configuring Environment Variables
@@ -32,8 +32,8 @@ Download latest Java SE Development Kit 8 release from its official download pag
 Most of Java based application’s uses environment variables to work. CentOS and RHEL provides of `/etc/profile.d/` directory for customizing environment variables per application
 
 ```#bash
-# echo "export JAVA_HOME=/opt/jdk1.8.0_111/" >> /etc/profile.d/java.sh
-# echo "export JRE_HOME=/opt/jdk1.8.0_111/jre/" >> /etc/profile.d/java.sh
+# echo "export JAVA_HOME=/opt/jdk1.8.0_161/" >> /etc/profile.d/java.sh
+# echo "export JRE_HOME=/opt/jdk1.8.0_161/jre/" >> /etc/profile.d/java.sh
 # echo "export PATH=\$PATH:\$JAVA_HOME/bin/:\$JRE_HOME/bin/" >> /etc/profile.d/java.sh
 # source /etc/profile.d/java.sh
 ```
@@ -72,16 +72,16 @@ Download latest Java SE Development Kit 8 release from its official download pag
 
 ```#bash
 $ cd /opt/
-$ sudo wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u111-b14/jdk-8u111-linux-x64.tar.gz"
-$ sudo tar xzfv jdk-8u111-linux-x64.tar.gz
+$ sudo wget --no-check-certificate -c --header "Cookie: oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u161-b12/2f38c3b165be4555a1fa6e98c45e0808/jdk-8u161-linux-x64.tar.gz"
+$ sudo tar xzfv jdk-8u161-linux-x64.tar.gz
 ```
 
  **Note:** *For production servers is highly recomended installing Java Server JRE. The Server JRE includes tools for JVM monitoring and tools commonly required for server applications, but does not include browser integration (the Java plug-in)*
 
 ```#bash
 $ cd /opt/
-$ sudo wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u111-b14/server-jre-8u111-linux-x64.tar.gz"
-$ sudo tar xzfv server-jre-8u111-linux-x64.tar.gz
+$ sudo wget --no-check-certificate -c --header "Cookie: oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u161-b12/2f38c3b165be4555a1fa6e98c45e0808/server-jre-8u161-linux-x64.tar.gz"
+$ sudo tar xzfv server-jre-8u161-linux-x64.tar.gz
 ```
 
 ### Configuring Environment Variables
@@ -89,8 +89,8 @@ $ sudo tar xzfv server-jre-8u111-linux-x64.tar.gz
 Most of Java based application’s uses environment variables to work. CentOS provides of `/etc/profile.d/` directory for customizing environment variables per application
 
 ```#bash
-$ sudo echo "export JAVA_HOME=/opt/jdk1.8.0_111/" >> /etc/profile.d/java.sh
-$ sudo echo "export JRE_HOME=/opt/jdk1.8.0_111/jre/" >> /etc/profile.d/java.sh
+$ sudo echo "export JAVA_HOME=/opt/jdk1.8.0_161/" >> /etc/profile.d/java.sh
+$ sudo echo "export JRE_HOME=/opt/jdk1.8.0_161/jre/" >> /etc/profile.d/java.sh
 $ sudo echo "export PATH=\$PATH:\$JAVA_HOME/bin/:\$JRE_HOME/bin/" >> /etc/profile.d/java.sh
 $ source /etc/profile.d/java.sh
 ```
@@ -126,12 +126,12 @@ Firstly, launch Terminal (found in Application/Utilities). Download latest Java 
 
 ```#bash
 $ cd ~/Downloads/
-$ wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u111-b14/jdk-8u111-macosx-x64.dmg"
+$ wget --no-check-certificate -c --header "Cookie: oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u161-b12/2f38c3b165be4555a1fa6e98c45e0808/jdk-8u161-macosx-x64.dmg"
 ```
 
 Open downloaded file with:
 ```#bash
-$ open jdk-8u111-macosx-x64.dmg
+$ open jdk-8u161-macosx-x64.dmg
 ```
 
 This command launch a window that contains a **pkg** file. Make double click and follow instructions
