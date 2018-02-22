@@ -15,11 +15,11 @@ Download latest Java SE Development Kit 8 release from its official download pag
 
 ```#bash
 # cd /opt/
-wget --no-check-certificate -c --header "Cookie: oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u161-b12/2f38c3b165be4555a1fa6e98c45e0808/jdk-8u161-linux-x64.tar.gz"
+# wget --no-check-certificate -c --header "Cookie: oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u161-b12/2f38c3b165be4555a1fa6e98c45e0808/jdk-8u161-linux-x64.tar.gz"
 # tar xzfv jdk-8u161-linux-x64.tar.gz
 ```
 
- **Note:** *For production servers is highly recomended installing Java Server JRE. The Server JRE includes tools for JVM monitoring and tools commonly required for application servers, but does not include browser integration (the Java plug-in)*
+ **Note:** *For production servers is highly recommended installing Java Server JRE. The Server JRE includes tools for JVM monitoring and tools commonly required for application servers, but does not include browser integration (the Java plug-in)*
 
 ```#bash
 # cd /opt/
@@ -76,7 +76,7 @@ $ sudo wget --no-check-certificate -c --header "Cookie: oraclelicense=accept-sec
 $ sudo tar xzfv jdk-8u161-linux-x64.tar.gz
 ```
 
- **Note:** *For production servers is highly recomended installing Java Server JRE. The Server JRE includes tools for JVM monitoring and tools commonly required for server applications, but does not include browser integration (the Java plug-in)*
+ **Note:** *For production servers is highly recommended installing Java Server JRE. The Server JRE includes tools for JVM monitoring and tools commonly required for server applications, but does not include browser integration (the Java plug-in)*
 
 ```#bash
 $ cd /opt/
