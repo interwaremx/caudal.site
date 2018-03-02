@@ -1,7 +1,8 @@
 title: Downloads
 ---
 
-## 0.7.14
+## Latest
+### 0.7.14
  * [ZIP](caudal-0.7.14.zip)
    ```#bash
    $ unzip caudal-0.7.14.zip
@@ -14,8 +15,8 @@ title: Downloads
    $ cd caudal
    $ bin/caudal -c config/ start
    ```
-   
-## 0.7.4-SNAPSHOT
+## Previous versions
+### 0.7.4-SNAPSHOT
  * [ZIP](caudal-0.7.4-SNAPSHOT.zip)
    ```#bash
    $ unzip caudal-0.7.4-SNAPSHOT.zip
