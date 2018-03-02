@@ -5,7 +5,7 @@ Installing Caudal is quite easy. However, you do need to have other thing instal
 
 ## Requirements
  * [Java 1.8 (OpenJDK or OracleJDK)](java.html)
- * [Leiningen] (leiningen.html)
+ * [Leiningen](leiningen.html)
 
 ## Installation from binary distribution
 
