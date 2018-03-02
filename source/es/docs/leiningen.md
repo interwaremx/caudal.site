@@ -4,34 +4,32 @@ title: Instalar Leiningen
 ## Linux RHEL 7 & CentOS 7
 ### Descargar Leiningen
 
-Descargar 
+Creamos un directorio y descargamos desde el sitio de [Leiningen](https://leiningen.org)
 ```#bash
-wget https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein 
+$ mkdir -p /opt/lein/bin
+$ cd /opt/lein/bin
+$ wget https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
 ```
-Colócalo en tu $ PATH donde tu shell pueda encontrarlo (ej. /opt/lein/bin)
 
 Agregar permisos de ejecución
 ```#bash
-$ cd /opt/lein/bin
 $ chmod +x lein
 ```
 
-Descarga de paquete de autoinstalación
+Ejecuta `lein`, descargará algunas dependencias, podría tomar algunos minutos:
 ```#bash
-$ cd /opt/lein/
 $ ./lein run
 ```
 ### Configurar Variables de Ambiente
-
-Para ejecutar lein desde cualquier sitio se usan las variables de ambiente para trabajar. CentOS y RHEL proveen del directorio `/etc/profile.d/` para personalizar las variables de ambiente por aplicacion:
+Para ejecutar lein desde cualquier sitio se usan las variables de ambiente para trabajar. CentOS y RHEL proveen del directorio `/etc/profile.d/` para personalizar las variables de ambiente por aplicación:
 ```#bash
-# echo "export  LEIN_HOME=/opt/lein/" >> /etc/profile.d/lein.sh
-# echo "LEIN=$LEIN_HOME/bin" >> /etc/profile.d/lein.sh
-# echo "export PATH=\$PATH:\$LEIN_HOME/bin/" >> /etc/profile.d/lein.sh
+# echo "export LEIN_HOME=/opt/lein/" >> /etc/profile.d/lein.sh
+# echo "export LEIN=$LEIN_HOME/bin" >> /etc/profile.d/lein.sh
+# echo "export PATH=\$PATH:\$LEIN" >> /etc/profile.d/lein.sh
 # source /etc/profile.d/lein.sh
 ```
-### Ejecución de lein
 
+### Ejecución de lein
 ```#bash
 $ lein relp  
 nREPL server started on port 35001 on host 127.0.0.1 - nrepl://127.0.0.1:35001
