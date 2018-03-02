@@ -4,7 +4,10 @@ title: Instalar Leiningen
 ## Linux RHEL 7 & CentOS 7
 ### Descargar Leiningen
 
-Descargar * [lein script  ](https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein.bat) y guardarlo con nombre lein.sh
+Descargar 
+```#bash
+wget https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein 
+```
 Colócalo en tu $ PATH donde tu shell pueda encontrarlo (ej. /opt/lein/bin)
 
 Agregar permisos de ejecución
