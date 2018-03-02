@@ -4,106 +4,139 @@ title: Configuration
 ## Configuration File
 
 Caudal uses one or many configuration files with the following structure:
-
-```
+```clojure config/caudal-config.clj
 ;; Requires
-(require '[mx.interware.caudal.streams.common :refer :all])
-(require '[mx.interware.caudal.streams.stateful :refer :all])
-(require '[mx.interware.caudal.streams.stateless :refer :all])
-
-;; Sinks
-(defsink my-streamer 10000 ;; backpressure limit
-  (printe ["Received event : "]))
+(ns caudal.config.basic
+  (:require
+   [mx.interware.caudal.io.rest-server :refer :all]
+   [mx.interware.caudal.streams.common :refer :all]
+   [mx.interware.caudal.streams.stateful :refer :all]
+   [mx.interware.caudal.streams.stateless :refer :all]))
 
 ;; Listeners
-(deflistener my-listener [{:type 'mx.interware.caudal.io.tcp-server
-                               :parameters {:port 9900
-                                            :idle-period 60}}])
+(deflistener tcp [{:type 'mx.interware.caudal.io.tcp-server
+                   :parameters {:port 9900
+                   :idle-period 60}}])
+;; Sinks
+(defsink example 1 ;; backpressure
+  (counter [:state-counter :event-counter]
+           (->INFO [:all])))
 
-;; Wire listeners and streamers
-(wire [my-listener] [my-streamer])
+;; Config View (optional)
+(config-view [example] {:doughnut {:state-counter {:value-fn :n :tooltip [:n]}}})
+
+;; Wire
+(wire [tcp] [example])
+
+;; Web (optional)
+(web
+ {:http-port 9901
+  :publish-sinks [example]})
 ```
 
-* **Requires** section loads libs. These libs contains Clojure functions to be used. See [API section](/api) for more information.
-* **Sinks** section define streamers functions to be applied to each event into data stream.
+* **Requires** section loads libs. These libs contains Clojure functions to be used. See [API section](../api) for more information.
 * **Listeners** section define mechanisms to retrieve events.
+* **Sinks** section define streamers functions to be applied to each event into data stream.
 * **Wire** section routes listener acquired event to a streamers.
 
 ## Creating a Simple Configuration
 
-Using your favorite editor create a file called **simple.clj** into **config/** directory: 
+Using your favorite editor create a file called **classifier.clj** into **config/** directory: 
 ```#bash
-$ cd caudal-0.7.4
-$ emacs config/simple.clj
+$ cd caudal-0.7.14
+$ emacs config/classifier.clj
 ```
 
-Put the following content in your **simple.clj**:
-```
+Put the following content in your **classifier.clj**:
+```clojure config/classifier.clj
 ;; Requires
-(require '[mx.interware.caudal.streams.common :refer :all])
-(require '[mx.interware.caudal.streams.stateful :refer :all])
-(require '[mx.interware.caudal.streams.stateless :refer :all])
-
-;; Sinks
-(defsink my-streamer 10000
-  ;; Counts received events
-  ;; stores account into State with keyword ::counting
-  ;; decorates received event with account with keyword :n
-  (counter [::counting :n]
-    (printe ["Received event: "])))
+(ns caudal.config.basic
+  (:require
+   [mx.interware.caudal.io.rest-server :refer :all]
+   [mx.interware.caudal.streams.common :refer :all]
+   [mx.interware.caudal.streams.stateful :refer :all]
+   [mx.interware.caudal.streams.stateless :refer :all]))
 
 ;; Listeners
-(deflistener my-listener [{:type 'mx.interware.caudal.io.tcp-server
-                               :parameters {:port 9900
-                                            :idle-period 60}}])
+(deflistener tcp [{:type 'mx.interware.caudal.io.tcp-server
+                   :parameters {:port 9900
+                   :idle-period 60}}])
 
-;; Wire listeners and streamers
-(wire [my-listener] [my-streamer])
+;; Simple classifier
+(defn classifier [event]
+  (let [counter (:event-counter event)]
+    (assoc event :class (if (odd? counter) "odd" "even"))))
+
+;; Sinks
+(defsink my-sink 1 ;; backpressure
+  (counter [:s-counter :event-counter]  ;; count each event
+           (smap [classifier]             ;; smap modify each event using classifier function
+                 (by [:class]               ;; by each event's class
+                     (counter [:c-counter :n] ;; counts by its class
+                              (->INFO [:all]))))))
+
+;; Config View (optional)
+(config-view [my-sink] {:doughnut {:c-counter {:value-fn :n :tooltip [:n]}}})
+
+;; Wire
+(wire [tcp] [my-sink])
+
+;; Web (optional)
+(web
+ {:http-port 9901
+  :publish-sinks [my-sink]})
 ```
 
-Save your **simple.clj** file and run it using Caudal, passing your file with **-c** option:
-```#bash
-$ bin/start-caudal.sh -c 
-                        __      __
-  _________ ___  ______/ /___ _/ /
- / ___/ __ `/ / / / __  / __ `/ /
-/ /__/ /_/ / /_/ / /_/ / /_/ / /
-\___/\__,_/\__,_/\__,_/\__,_/_/
-
-Caudal 0.7.4-SNAPSHOT
-log4j:WARN [stdout] should be System.out or System.err.
-log4j:WARN Using previously set target, System.out by default.
-2017-01-30 15:23:35.797 [main] INFO  starter-dsl:1 - {:caudal start}
-2017-01-30 15:23:35.801 [main] INFO  starter-dsl:1 - {:loading-dsl {:file config/simple.clj}}
-2017-01-30 15:23:37.007 [main] INFO  tcp-server:1 - Starting server on port :  9900  ...
+Save your **classifier.clj** file and run it using Caudal, passing your file with **-c** option:
+```
+$ bin/caudal -c config/classifier.clj start
 ```
 
 Now, in other terminal, send events in EDN format using telnet:
-```#bash
+```
 $ telnet localhost 9900
-{:foo "bar"}
-{:foo "bar"}
-{:foo "bar"}
-{:foo "bar"}
-{:foo "bar"}
-{:baz "qux"}
-{:baz "qux"}
-{:baz "qux"}
-{:baz "qux"}
-{:baz "qux"}
+Trying ::1...
+Connected to localhost.
+Escape character is '^]'.
+{:foo :bar}
+{:foo :bar}
+{:foo :bar}
+{:foo :bar}
+{:foo :bar}
+{:foo :bar}
+{:foo :bar}
+{:foo :bar}
+{:foo :bar}
+{:foo :bar}
+{:foo :bar}
+{:foo :bar}
 ```
 
 In your Caudal terminal, you could see the following output:
-```#bash
-Received event: {:foo "bar", :caudal/latency 656848, :n 1}
-Received event: {:foo "bar", :caudal/latency 666314, :n 2}
-Received event: {:foo "bar", :caudal/latency 694574, :n 3}
-Received event: {:foo "bar", :caudal/latency 713406, :n 4}
-Received event: {:foo "bar", :caudal/latency 598784, :n 5}
-Received event: {:baz "qux", :caudal/latency 331390, :n 6}
-Received event: {:baz "qux", :caudal/latency 189937, :n 7}
-Received event: {:baz "qux", :caudal/latency 196689, :n 8}
-Received event: {:baz "qux", :caudal/latency 189225, :n 9}
-Received event: {:baz "qux", :caudal/latency 221523, :n 10}
+```
+2018-01-01 22:43:23.227 INFO  [clojure-agent-send-pool-2] streams.stateless - {:foo :foo, :caudal/latency 1459909, :event-counter 1, :class "odd", :n 1}
+2018-01-01 22:43:33.827 INFO  [clojure-agent-send-pool-3] streams.stateless - {:foo :foo, :caudal/latency 590683, :event-counter 2, :class "event", :n 1}
+2018-01-01 22:43:36.426 INFO  [clojure-agent-send-pool-4] streams.stateless - {:foo :foo, :caudal/latency 675070, :event-counter 3, :class "odd", :n 2}
+2018-01-01 22:43:38.513 INFO  [clojure-agent-send-pool-5] streams.stateless - {:foo :foo, :caudal/latency 455418, :event-counter 4, :class "event", :n 2}
+2018-01-01 22:43:40.698 INFO  [clojure-agent-send-pool-0] streams.stateless - {:foo :foo, :caudal/latency 438063, :event-counter 5, :class "odd", :n 3}
+2018-01-01 22:43:41.967 INFO  [clojure-agent-send-pool-1] streams.stateless - {:foo :foo, :caudal/latency 353969, :event-counter 6, :class "event", :n 3}
+2018-01-01 22:43:43.152 INFO  [clojure-agent-send-pool-2] streams.stateless - {:foo :foo, :caudal/latency 259806, :event-counter 7, :class "odd", :n 4}
+2018-01-01 22:43:44.084 INFO  [clojure-agent-send-pool-3] streams.stateless - {:foo :foo, :caudal/latency 277867, :event-counter 8, :class "event", :n 4}
+2018-01-01 22:43:44.894 INFO  [clojure-agent-send-pool-4] streams.stateless - {:foo :foo, :caudal/latency 285944, :event-counter 9, :class "odd", :n 5}
+2018-01-01 22:43:45.712 INFO  [clojure-agent-send-pool-5] streams.stateless - {:foo :foo, :caudal/latency 449371, :event-counter 10, :class "event", :n 5}
+2018-01-01 22:43:46.454 INFO  [clojure-agent-send-pool-0] streams.stateless - {:foo :foo, :caudal/latency 273238, :event-counter 11, :class "odd", :n 6}
+2018-01-01 22:44:25.710 INFO  [clojure-agent-send-pool-1] streams.stateless - {:foo :foo, :caudal/latency 381772, :event-counter 12, :class "event", :n 6}
+2018-01-01 22:44:26.733 INFO  [clojure-agent-send-pool-2] streams.stateless - {:foo :foo, :caudal/latency 290489, :event-counter 13, :class "odd", :n 7}
+2018-01-01 22:44:27.464 INFO  [clojure-agent-send-pool-3] streams.stateless - {:foo :foo, :caudal/latency 360034, :event-counter 14, :class "event", :n 7}
+2018-01-01 22:44:28.203 INFO  [clojure-agent-send-pool-4] streams.stateless - {:foo :foo, :caudal/latency 337799, :event-counter 15, :class "odd", :n 8}
+2018-01-01 22:44:29.005 INFO  [clojure-agent-send-pool-5] streams.stateless - {:foo :foo, :caudal/latency 335995, :event-counter 16, :class "event", :n 8}
+2018-01-01 22:44:29.632 INFO  [clojure-agent-send-pool-0] streams.stateless - {:foo :foo, :caudal/latency 327458, :event-counter 17, :class "odd", :n 9}
+2018-01-01 22:44:30.234 INFO  [clojure-agent-send-pool-1] streams.stateless - {:foo :foo, :caudal/latency 276567, :event-counter 18, :class "event", :n 9}
+2018-01-01 22:44:47.155 INFO  [clojure-agent-send-pool-2] streams.stateless - {:foo :foo, :caudal/latency 298137, :event-counter 19, :class "odd", :n 10}
 ```
 
+You can see how your event has been enriched with some parameters. 
+
+Originally, `caudal-config.clj` counts each event and places in ` event-counter` its number. 
+
+In `classifier.clj` decides if the incoming event is even or odd and puts a new attribute `:class` using `smap`, then using `by` divides the event stream by `:class` and finally with `counter` counts each event again, but using its `:class`.
