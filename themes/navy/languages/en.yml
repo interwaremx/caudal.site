@@ -24,8 +24,8 @@ sidebar:
     configuration: Configuration
     
     labs: Labs
-    lab1: Getting Started and Setup
-    lab2: Listeners and Parsing
+    lab1: Listeners
+    lab2: Parsers
     lab3: Streamers
     lab4: Statistics
     lab5: Integration
