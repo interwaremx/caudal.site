@@ -17,21 +17,15 @@ Caudal uses one or many configuration files with the following structure:
 (deflistener tcp [{:type 'mx.interware.caudal.io.tcp-server
                    :parameters {:port 9900
                    :idle-period 60}}])
-;; Sinks
+
+;; Streamers
 (defsink example 1 ;; backpressure
   (counter [:state-counter :event-counter]
            (->INFO [:all])))
 
-;; Config View (optional)
-(config-view [example] {:doughnut {:state-counter {:value-fn :n :tooltip [:n]}}})
-
 ;; Wire
 (wire [tcp] [example])
 
-;; Web (optional)
-(web
- {:http-port 9901
-  :publish-sinks [example]})
 ```
 
 * **Requires** section loads libs. These libs contains Clojure functions to be used. See [API section](../api) for more information.
@@ -67,25 +61,18 @@ Put the following content in your **classifier.clj**:
   (let [counter (:event-counter event)]
     (assoc event :class (if (odd? counter) "odd" "even"))))
 
-;; Sinks
-(defsink my-sink 1 ;; backpressure
-  (counter [:s-counter :event-counter]  ;; count each event
-           (smap [classifier]             ;; smap modify each event using classifier function
-                 (by [:class]               ;; by each event's class
-                     (counter [:c-counter :n] ;; counts by its class
+;; Streamers
+(defsink my-sink 1 ;; backpressure            ;; (0) incoming event
+  (counter [:s-counter :event-counter]        ;; (1) count each event
+           (smap [classifier]                 ;; (2) smap modify each event using classifier function
+                 (by [:class]                 ;; (2) by each event's class
+                     (counter [:c-counter :n] ;; (3) counts by its class
                               (->INFO [:all]))))))
-
-;; Config View (optional)
-(config-view [my-sink] {:doughnut {:c-counter {:value-fn :n :tooltip [:n]}}})
 
 ;; Wire
 (wire [tcp] [my-sink])
-
-;; Web (optional)
-(web
- {:http-port 9901
-  :publish-sinks [my-sink]})
 ```
+![Caudal Streamers Diagram](./diagram-streamers.svg)
 
 Save your **classifier.clj** file and run it using Caudal, passing your file with **-c** option:
 ```
