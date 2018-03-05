@@ -26,8 +26,8 @@ Caudal uses an application State in order to store data needed for metrics and s
 Get the binary file for the lastest Caudal distribution at [downloads section](/downloads)
 
 ```#bash
-$ wget http://interwaremx.github.io/caudal.docs/downloads/caudal-0.7.4.tgz
-$ tar xvfz caudal-0.7.4.tgz
+$ wget http://localhost:4000/caudal.docs/downloads/caudal-0.7.14.tar.gz
+$ tar xvfz caudal-0.7.4.tar.gz
 ```
 
 ### Running
