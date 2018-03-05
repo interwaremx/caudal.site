@@ -1,221 +1,148 @@
-title: Lab 2 - Listeners and Parsing
+title: Lab 2 - Parsing
 ---
-A lab exercise intended to show the configuration and the use of listeners and parsers inside the Caudal Platform
 
+Some Caudal Listeners require a parser function to convert custom data to EDN. 
 
 ## Requirements
- * Have successfully completed **Lab 1**: [Getting Started and Setup](lab1.html)
+ * Have successfully completed [Listeners](lab1.html)
 
 
-## Creating a TCP listener
+[Tailer](lab1.html#Tailer), [Syslog](lab1.html#Syslog) and [Log4j](lab1.html#Log4j) uses a parser function to format our incoming data into EDN for analysis. 
 
-1. Change current directory to the **caudal-labs** project
+## Parsing an Apache Log
 
-```
-$ cd caudal-labs/
-```
+[Apache Common Log Format](https://httpd.apache.org/docs/2.4/logs.html#common) has 7 fields. Into `httpd.conf` looks like this:
 
-2. Edit **config/caudal-config.clj** file to configure a **tcp** listener running on port **9900**. File content must be the following:
-```
-(ns caudal-labs)
-
-(require '[mx.interware.caudal.streams.common :refer :all])
-(require '[mx.interware.caudal.streams.stateful :refer :all])
-(require '[mx.interware.caudal.streams.stateless :refer :all])
-
-(defsink streamer-1 10000
-  (printe ["Received event : "]))
-
-(deflistener tcp-listener [{:type 'mx.interware.caudal.io.tcp-server
-                            :parameters {:port 9900
-                                         :idle-period 60}}])
-
-(wire [tcp-listener] [streamer-1])
+```apache /etc/httpd.log
+LogFormat "%h %l %u %t \"%r\" %>s %b" common
+CustomLog logs/access_log common
 ```
 
-
-## Running Caudal
-
-1. Start Caudal using the configuration from the modified file **config/caudal-config.clj**
-
+And produces the following output:
+```plain /var/log/httpd/access_log
+127.0.0.1 - - [05/Mar/2018:06:58:56 +0000] \"GET /docs/lab2.html HTTP/1.1\" 200 41144
 ```
-$ ./bin/start-caudal.sh -c ./config/caudal-config.clj
-Verifying JAVA instalation ...
+
+Tailer can help us to read this file, only we need to write a parser. This is easy thanks to `re-matches` function of Clojure:
+
+```clojure version 1
+;; Converts ApacheLog line to EDN
+(defn apache-parser [line]
+  (let [regex #"([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})\s([0-9a-zA-Z-]+)\s([0-9a-zA-Z-]+)\s\[([0-9]{2}/[a-zA-Z]{3}/[0-9]{4}:[0-9]{2}:[0-9]{2}:[0-9]{2}\s[\+-]+[0-9]{4})\]\s\"([A-Z]+\s\S+\sHTTP/[0-9]+.[0-9]+)\"\s([0-9]+)\s([0-9]+)" 
+        [_ host remote-log-name remote-user time request status size] (re-matches regex line)]
+    {:host host
+     :remote-log-name remote-log-name
+     :remote-user remote-user
+     :time time
+     :request request
+     :status status
+     :size size}))
+```
+
+Using this new function is simple, only we need passing it in `:parser` parameter of tailer’s deflistener as follows:
+```clojure config/example-parser.clj
+;; Requires
+(ns caudal.example.tcp
+  (:require
+   [mx.interware.caudal.io.rest-server :refer :all]
+   [mx.interware.caudal.streams.common :refer :all]
+   [mx.interware.caudal.streams.stateful :refer :all]
+   [mx.interware.caudal.streams.stateless :refer :all]))
+
+;; Converts ApacheLog line to EDN
+(defn apache-parser [line]
+  (let [regex #"([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})\s([0-9a-zA-Z-]+)\s([0-9a-zA-Z-]+)\s\[([0-9]{2}/[a-zA-Z]{3}/[0-9]{4}:[0-9]{2}:[0-9]{2}:[0-9]{2}\s[\+-]+[0-9]{4})\]\s\"([A-Z]+\s\S+\sHTTP/[0-9]+.[0-9]+)\"\s([0-9]+)\s([0-9]+)" 
+        [host remote-log-name remote-user time request status size] (re-matches regex line)]
+    {:host host
+     :remote-log-name remote-log-name
+     :remote-user remote-user
+     :time time
+     :request request
+     :status status
+     :size size}))
+
+;; Listeners
+(deflistener tailer [{:type 'mx.interware.caudal.io.tailer-server
+                      :parameters {:parser apache-parser  ;; Call to our parser
+                                   :inputs  {:directory "."
+                                             :wildcard  "access_log"}
+                                   :delta        200
+                                   :from-end     false
+                                   :reopen       true
+                                   :buffer-size  1024}}])
+;; Sinks
+(defsink example 1 ;; backpressure
+  (->INFO [:all]))
+
+;; Wire
+(wire [tailer] [example])
+```
+
+Running Caudal, output results as:
+```
+$ bin/caudal -c config/example-parser.clj start
+Verifying JAVA installation ...
 /usr/bin/java
-JAVA executable found in PATH
-JAVA Version : 1.8.0_91
-BIN path /projects/caudal-labs/bin
-Starting Caudal from /projects/caudal-labs
+Using JVM installed on : java ...
                         __      __
   _________ ___  ______/ /___ _/ /
  / ___/ __ `/ / / / __  / __ `/ /
 / /__/ /_/ / /_/ / /_/ / /_/ / /
 \___/\__,_/\__,_/\__,_/\__,_/_/
 
-Caudal 0.7.4-SNAPSHOT
-log4j:WARN [stdout] should be System.out or System.err.
-log4j:WARN Using previously set target, System.out by default.
-log4j:WARN [stdout] should be System.out or System.err.
-log4j:WARN Using previously set target, System.out by default.
-SLF4J: Class path contains multiple SLF4J bindings.
-SLF4J: Found binding in [jar:file:/projects/caudal-labs/lib/logback-classic-1.1.3.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/projects/caudal-labs/lib/slf4j-log4j12-1.7.5.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
-SLF4J: Actual binding is of type [ch.qos.logback.classic.util.ContextSelectorStaticBinder]
-16:27:37.788 [main] INFO  mx.interware.caudal.core.starter-dsl - {:loading-dsl {:file ./config/caudal-config.clj}}
-16:27:39.162 [main] INFO  mx.interware.caudal.io.tcp-server - Starting server on port :  9900  ...
+mx.interware/caudal 0.7.14
+
+:opts {:help false, :config "config/example-parser.clj"}
+2018-03-05 02:18:51.099 INFO  [main] core.starter-dsl - {:caudal :start, :version "0.7.14"}
+2018-03-05 02:18:51.104 INFO  [main] core.starter-dsl - {:loading-dsl {:file #object[java.io.File 0x183e8023 config/example-parser.clj]}}
+2018-03-05 02:18:56.146 INFO  [main] io.rest-server - Register fn for:  "hello"
+2018-03-05 02:18:56.288 INFO  [main] streams.common - Attaching send2agent and sink to state
+2018-03-05 02:18:57.347 INFO  [main] io.tailer-server - {:tailing-files ("/var/log/httpd/access_log")}
+2018-03-05 02:18:57.394 INFO  [clojure-agent-send-pool-1] streams.stateless - {:host "127.0.0.1", :remote-log-name "-", :remote-user "-", :time "05/Mar/2018:06:58:56 +0000", :request "GET /docs/lab2.html HTTP/1.1", :status "200", :size "41144", :caudal/latency 1841978}
 ```
 
+Parser function `apache-parser` can be improved in many ways, by instance, warranting match or converting data from String to Integer or Date as appropiate:
 
-## Testing the TCP listener
-
-1. Open another terminal and send an event message through the Caudal **tcp** channel running on port **9900**
-
-```
-$ telnet localhost 9900
-Trying ::1...
-Connected to localhost.
-Escape character is '^]'.
-{:tx "getOperation" :customer "Nile" :id 96 :ammount 57.1428}
-EOT
-Connection closed by foreign host.
-$
-```
-
-2. Verify the generated log for the received event
-```
-16:29:17.801 [NioProcessor-3] INFO  o.a.m.filter.logging.LoggingFilter - CREATED
-16:29:17.801 [NioProcessor-3] INFO  o.a.m.filter.logging.LoggingFilter - OPENED
-16:29:24.669 [NioProcessor-3] INFO  o.a.m.filter.logging.LoggingFilter - RECEIVED: HeapBuffer[pos=0 lim=63 cap=4096: 7B 3A 74 78 20 22 67 65 74 4F 70 65 72 61 74 69...]
-16:29:24.670 [NioProcessor-3] DEBUG o.a.m.f.codec.ProtocolCodecFilter - Processing a MESSAGE_RECEIVED for session 2
-Received event : {:tx "getOperation", :customer "Nile", :id 96, :ammount 57.1428, :caudal/latency 509612}
-16:29:28.091 [NioProcessor-3] INFO  o.a.m.filter.logging.LoggingFilter - RECEIVED: HeapBuffer[pos=0 lim=5 cap=4096: 45 4F 54 0D 0A]
-16:29:28.091 [NioProcessor-3] DEBUG o.a.m.f.codec.ProtocolCodecFilter - Processing a MESSAGE_RECEIVED for session 2
-16:29:28.091 [NioProcessor-3] INFO  o.a.m.filter.logging.LoggingFilter - CLOSED
+```clojure version 2
+;; Converts ApacheLog line to EDN
+(defn apache-parser [line]
+  (let [regex #"([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})\s([0-9a-zA-Z-]+)\s([0-9a-zA-Z-]+)\s\[([0-9]{2}/[a-zA-Z]{3}/[0-9]{4}:[0-9]{2}:[0-9]{2}:[0-9]{2}\s[\+-]+[0-9]{4})\]\s\"([A-Z]+\s\S+\sHTTP/[0-9]+.[0-9]+)\"\s([0-9]+)\s([0-9]+)" 
+        [_ host remote-log-name remote-user time request status size] (re-matches regex line)]
+    (if (and host remote-log-name remote-user time request status size) ;; all fields exists
+      {:host host
+       :remote-log-name remote-log-name
+       :remote-user remote-user
+       :time (-> "dd/MMM/yyyy:hh:mm:ss Z" java.text.SimpleDateFormat. (.parse time)) ;; to Date
+       :request request
+       :status (Integer/parseInt status) ;; to Integer
+       :size (Integer/parseInt size)}))) ;; to Integer
 ```
 
-### Creating a tailer listener
-
-1. Modify **config/caudal-config.clj** configuration file to use tailer listener that reads events from **data/input.txt** file. Add the listener configuration to the end of the file as shown below:
+Now time, status and size are not Strings:
 ```
-...
-
-(deflistener tcp-listener [{:type 'mx.interware.caudal.io.tcp-server
-                            :parameters {:port 9900
-                                         :idle-period 60}}])
-
-
-(deflistener tailer [{:type 'mx.interware.caudal.io.tailer-server
-                      :parameters {:parser      'mx.interware.caudal.test.simple-parser/parse-log-line
-                                   :inputs      {:directory  "./data"
-                                                 :wildcard   "*txt"
-                                                 :expiration 5}
-                                   :delta       1000
-                                   :from-end    true
-                                   :reopen      true
-                                   :buffer-size 16384}}])
-
-(wire [tcp-listener tailer] [streamer-1])
-```
-*Note :* Now Caudal is ready for receiving event messages from two sources, a tcp channel and tailing txt files in data directory
-
-2. Restart Caudal for applying changes in configuration. Caudal can be stopped pressing **ctrl+c** key combination
-
-```
-mactirio:caudal-labs axis$ ./bin/start-caudal.sh -c ./config/caudal-config.clj
-Verifying JAVA instalation ...
-...
-16:35:29.705 [main] INFO  mx.interware.caudal.io.tcp-server - Starting server on port :  9900  ...
-16:35:29.759 [main] INFO  mx.interware.caudal.io.tailer-server - Tailing files :  (/projects/caudal-labs/./data/input.txt)  ...
-16:35:29.769 [main] INFO  mx.interware.caudal.io.tailer-server - Channel created for file  input.txt  - > channel :  #object[clojure.core.async.impl.channels.ManyToManyChannel 0x49cf9028 clojure.core.async.impl.channels.ManyToManyChannel@49cf9028]
-16:35:29.846 [main] INFO  mx.interware.caudal.io.tailer-server - register-channels for tailer
+2018-03-05 02:28:23.921 INFO  [clojure-agent-send-pool-1] streams.stateless - {:host "127.0.0.1", :remote-log-name "-", :remote-user "-", :time #inst "2018-03-05T06:58:56.000-00:00", :request "GET /docs/lab2.html HTTP/1.1", :status 200, :size 41144, :caudal/latency 1133576}
 ```
 
-
-### Testing tailer listener
-
-1. Open another terminal and send a test event using the Caudal **tailer**, appending the message to **data/input.txt** file
-```
-$ echo "{:tx \"findSales\" :customer \"Congo\" :id 88 :key \"XSA-89\"}" > data/input.txt
-```
-
-2. Verify the generated log for the tailed event
-```
-line :  {:tx "findSales" :customer "Congo" :id 88 :key "XSA-89"}
-Received event : {:tx "findSales", :customer "Congo", :id 88, :key "XSA-89", :caudal/latency 608933}
-```
-
-
-### Creating custom parser
-
-1. Create a clojure namespace file on **src/caudal_labs/parser.clj** and set the following code to it:
-
-```
-(ns caudal-labs.parser
-  (:require [clojure.string :refer [split]]))
-
-(defn parse-piped-line [line]
-  (let [_        (println "piped line : " line)
-        elements (split line #"\|")
-        event    {:operation (nth elements 0)
-                  :product   (nth elements 1)
-                  :volume    (Integer/parseInt (nth elements 2))
-                  :price     (Double/parseDouble (nth elements 3))}]
-    event))
+And with some parenthesis into request regex group:
+```clojure version 3
+;; Converts ApacheLog line to EDN
+(defn apache-parser [line]
+  (let [regex #"([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})\s([0-9a-zA-Z-]+)\s([0-9a-zA-Z-]+)\s\[([0-9]{2}/[a-zA-Z]{3}/[0-9]{4}:[0-9]{2}:[0-9]{2}:[0-9]{2}\s[\+-]+[0-9]{4})\]\s\"(([A-Z]+)\s(\S+)\s(HTTP/[0-9]+.[0-9]+))\"\s([0-9]+)\s([0-9]+)" 
+        [_ host remote-log-name remote-user time request protocol path version status size] (re-matches regex line)]
+    (if (and host remote-log-name remote-user time request protocol path version status size) ;; all fields exists
+      {:host host
+       :remote-log-name remote-log-name
+       :remote-user remote-user
+       :time (-> "dd/MMM/yyyy:hh:mm:ss Z" java.text.SimpleDateFormat. (.parse time)) ;; to Date
+       :request request
+       :protocol protocol
+       :path path
+       :version version
+       :status (Integer/parseInt status) ;; to Integer
+       :size (Integer/parseInt size)}))) ;; to Integer
 ```
 
-2. Modify tailer listener definition in **config/caudal-config** for using **parse-piped-line** function as the parser
-
+Is possible obtain protocol, path and version parts of request:
 ```
-...
-(deflistener tailer [{:type 'mx.interware.caudal.io.tailer-server
-                      :parameters {:parser      'caudal-labs.parser/parse-piped-line
-                                   :inputs      {:directory  "./data"
-                                                 :wildcard   "*txt"
-                                                 :expiration 5}
-                                   :delta       1000
-                                   :from-end    true
-                                   :reopen      true
-                                   :buffer-size 16384}}])
-...
-```
-
-3. Build project to use the namespace recently created
-
-```
-$ lein jar
-Warning: specified :main without including it in :aot.
-Implicit AOT of :main will be removed in Leiningen 3.0.0.
-If you only need AOT for your uberjar, consider adding :aot :all into your
-:uberjar profile instead.
-Compiling caudal-labs.custom
-Warning: The Main-Class specified does not exist within the jar. It may not be executable as expected. A gen-class directive may be missing in the namespace which contains the main method.
-Created /projects/caudal-labs/target/caudal-labs-0.1.2-SNAPSHOT.jar
-
-$ cp target/caudal-labs-0.1.2-SNAPSHOT.jar lib
-```
-
-4. Restart Caudal for applying changes in configuration
-
-```
-$ ./bin/start-caudal.sh -c ./config/caudal-config.clj
-Verifying JAVA instalation ...
-...
-16:43:43.791 [main] INFO  mx.interware.caudal.io.tcp-server - Starting server on port :  9900  ...
-16:43:43.850 [main] INFO  mx.interware.caudal.io.tailer-server - Tailing files :  (/projects/caudal-labs/./data/input.txt)  ...
-16:43:43.857 [main] INFO  mx.interware.caudal.io.tailer-server - Channel created for file  input.txt  - > channel :  #object[clojure.core.async.impl.channels.ManyToManyChannel 0x1ad8df52 clojure.core.async.impl.channels.ManyToManyChannel@1ad8df52]
-16:43:43.876 [main] INFO  mx.interware.caudal.io.tailer-server - register-channels for tailer
-```
-
-### Testing custom parser
-
-1. Open another terminal and send a test event using the Caudal **tailer**, appending the message to **data/input.txt** file
-```
-$ echo "sale|flash memory|2|5.0" > data/input.txt
-```
-
-2. Verify the generated log for the tailed event
-```
-piped line :  sale|flash memory|2|5.0
-Received event : {:operation "sale", :product "flash memory", :volume 2, :price 5.0, :caudal/latency 4205855}
+2018-03-05 02:35:04.124 INFO  [clojure-agent-send-pool-1] streams.stateless - {:path "/docs/lab2.html", :request "GET /docs/lab2.html HTTP/1.1", :remote-user "-", :remote-log-name "-", :protocol "GET", :time #inst "2018-03-05T06:58:56.000-00:00", :size 41144, :host "127.0.0.1", :status 200, :version "HTTP/1.1", :caudal/latency 1093145}
 ```
