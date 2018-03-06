@@ -1,320 +1,371 @@
 title: Lab 3 - Streamers
 ---
-A lab exercise that shows examples for main streamers existing in Caudal 
 
+Streamers are special functions that manipulates and enrich events.
 
 ## Requirements
- * Have successfully completed **Lab 2**: [Listeners and Parsing](lab2.html)
+ * [Setup](setup.html)
+ * [Configuration](configuration.html)
+
+![Caudal Streamers Diagram](./diagram-streamers.svg)
+
+Caudal provides `defsink` macro to ingest events and streamers to manipulate it. Exists 2 types of streamers:
+
+| | |
+| - | - |
+| Stateless | smap, by, ->INFO take an event and can modified it (or not), however, not performs any modification in State |
+| Stateful | counter needs to remember how many events has been labeled, therefore, uses the State to make it |
 
 
-## Setting up an event enricher streamer
+Below are some streamers:
 
-1. Change current directory to the **caudal-labs** project
+## default
+Take each event and puts a new and key value. Is a stateless streamer function.
 
+### Configuration
+```clojure
+;; macro ;; var-name  ;; backpressure
+(defsink my-sink     1 
+         (default [:my-new-random (Math/random)]))
 ```
-$ cd caudal-labs/
-```
+Receives a vector with 2 elements, a new key and value to enrich current event.
 
-2. Edit **config/caudal-config.clj** file to configure a **dafault** streamer that adds attibutes to received event message.
-```
-(require '[mx.interware.caudal.streams.common :refer :all])
-(require '[mx.interware.caudal.streams.stateful :refer :all])
-(require '[mx.interware.caudal.streams.stateless :refer :all])
+### Example
+Write following configuration in `config/` directory:
+```clojure config/streamer-default.clj
+;; Requires
+(ns caudal.example.streamers
+  (:require
+   [mx.interware.caudal.io.rest-server :refer :all]
+   [mx.interware.caudal.streams.common :refer :all]
+   [mx.interware.caudal.streams.stateful :refer :all]
+   [mx.interware.caudal.streams.stateless :refer :all]))
 
-(defsink streamer-1 10000
+;; Listeners
+(deflistener tcp [{:type 'mx.interware.caudal.io.tcp-server 
+                   :parameters {:port        9900
+                                :idle-period 60}}])
+
+;; Sinks
+(defsink example 1 ;; backpressure
   (default [:reception-time (new java.util.Date)]
-           (printe ["Received event : "])))
+           (->INFO [:all])))
 
-(deflistener [{:type 'mx.interware.caudal.io.tcp-server 
-               :parameters {:port 9900
-                            :idle-period 60}}]
-  streamer-1)
+;; Wire
+(wire [tcp] [example])
 ```
 
-## Testing event enricher streamer
-
-1. Restart Caudal for applying changes in configuration.
+Run Caudal passing this file as config:
+```
+$ bin/caudal -c config/streamer-default.clj start
 
 ```
-$ ./bin/start-caudal.sh -c ./config/caudal-config.clj
-Verifying JAVA instalation ...
-...
+
+Open a telnet to `localhost` port `9900`:
+```
+$ telnet localhost 9900
 ```
 
-2. Open another terminal and send through the **tcp channel** the events shown below.
+And write an EDN map as follow:
 ```
 $ telnet localhost 9900
 Trying ::1...
 Connected to localhost.
 Escape character is '^]'.
-{:tx "login" :user "ClojurianX"}
-{:tx "set-status" :value "waiting"}
-...
+{:foo 1}
 ```
 
-3. Verify the generated log for the received events
+Verify generated log for new incoming event:
 ```
-...
-18:45:47.636 [NioProcessor-2] INFO  o.a.m.filter.logging.LoggingFilter - RECEIVED: HeapBuffer[pos=0 lim=34 cap=4096: 7B 3A 74 78 20 22 6C 6F 67 69 6E 22 20 3A 75 73...]
-18:45:47.641 [NioProcessor-2] DEBUG o.a.m.f.codec.ProtocolCodecFilter - Processing a MESSAGE_RECEIVED for session 1
-Received event : {:tx "login", :user "ClojurianX", :caudal/latency 744956, :reception-time #inst "2017-01-13T00:45:10.850-00:00"}
-18:46:47.853 [NioProcessor-2] INFO  o.a.m.filter.logging.LoggingFilter - IDLE
-IDLE  1
-18:47:16.997 [NioProcessor-2] INFO  o.a.m.filter.logging.LoggingFilter - RECEIVED: HeapBuffer[pos=0 lim=37 cap=4096: 7B 3A 74 78 20 22 73 65 74 2D 73 74 61 74 75 73...]
-18:47:16.998 [NioProcessor-2] DEBUG o.a.m.f.codec.ProtocolCodecFilter - Processing a MESSAGE_RECEIVED for session 1
-Received event : {:tx "set-status", :value "waiting", :caudal/latency 397546, :reception-time #inst "2017-01-13T00:45:10.850-00:00"}
-...
+2018-03-05 18:21:50.419 INFO  [clojure-agent-send-pool-1] streams.stateless - {:foo 1, :caudal/latency 2118820, :reception-time #inst "2018-03-06T00:21:42.360-00:00"}
 ```
 
-As you can see, the **default** streamer is adding **reception-time** attribute to every received event
+As you can see, `default` streamer is adding `:reception-time` attribute to every received event.
 
 
-## Setting up a counter streamer
+## counter
+Take each event and put a field with its number of incoming. Is a stateful streamer function.
 
-1. Edit **config/caudal-config.clj** file to configure a **counter** streamer that count every received event message having :tx attribute. File content must be the following:
+### Configuration
+```clojure
+;; macro ;; var-name  ;; backpressure
+(defsink my-sink     1 
+         (counter [:state-counter :event-counter]))
 ```
-(ns caudal-labs)
+Receives a vector with 2 elements, a key to store current count in State and a key to propagate current count in event. 
 
-(require '[mx.interware.caudal.streams.common :refer :all])
-(require '[mx.interware.caudal.streams.stateful :refer :all])
-(require '[mx.interware.caudal.streams.stateless :refer :all])
+### Example
+Write following configuration in `config/` directory:
+```clojure config/streamer-counter.clj
+;; Requires
+(ns caudal.example.streamers
+  (:require
+   [mx.interware.caudal.io.rest-server :refer :all]
+   [mx.interware.caudal.streams.common :refer :all]
+   [mx.interware.caudal.streams.stateful :refer :all]
+   [mx.interware.caudal.streams.stateless :refer :all]))
 
-(defsink streamer-1 10000
-  (counter [:event-counter :count]
-           (printe ["Received event : "])))
+;; Listeners
+(deflistener tcp [{:type 'mx.interware.caudal.io.tcp-server 
+                   :parameters {:port        9900
+                                :idle-period 60}}])
 
-(deflistener tcp-listener [{:type 'mx.interware.caudal.io.tcp-server 
-                            :parameters {:port 9900
-                                         :idle-period 60}}])
+;; Sinks
+(defsink example 1 ;; backpressure
+  (counter [:state-count :event-count]
+           (->INFO [:all])))
 
-(wire [tcp-listener] [streamer-1])
+;; Wire
+(wire [tcp] [example])
 ```
 
-
-## Testing the counter streamer
-
-1. Restart Caudal for applying changes in configuration
-
+Run Caudal passing this file as config:
 ```
-$ ./bin/start-caudal.sh -c ./config/caudal-config.clj
-Verifying JAVA instalation ...
-...
-16:53:39.442 [main] INFO  mx.interware.caudal.core.starter-dsl - {:loading-dsl {:file ./config/caudal-config.clj}}
-16:53:40.639 [main] INFO  mx.interware.caudal.io.tcp-server - Starting server on port :  9900  ...
+$ bin/caudal -c config/streamer-counter.clj start
 ```
 
-2. Open another terminal and send some event message through the Caudal **tcp** channel running on port **9900**
+Open a telnet to `localhost` port `9900`:
+```
+$ telnet localhost 9900
+```
 
+And write some EDN maps as follow:
 ```
 $ telnet localhost 9900
 Trying ::1...
 Connected to localhost.
 Escape character is '^]'.
-{:tx "login" :time #inst"2017-01-11T17:29:34.712-00:00" :user "schatsi" :host "tirio"}
-{:tx "login" :time #inst"2017-01-11T17:29:35.145-00:00" :user "imushroom" :host "andromeda"}
-{:tweet-id "114729583239036718" :user "ClojurianX" :text "How to use a charting library in Reagent http://buff.ly/2i0q23R  #clojure #chart #reagent" :retweeted false :coordinates [19.3660316 -99.1843784] :created_at "Wed Jan 11 10:07:23 +0000 2017"}
-{:tweet-id "114729583239036819" :user "ClojurianX" :text "Why #Clojure is better than C, Python,Ruby and Java and why should you care" :retweeted true :coordinates [19.3660316 -99.1843784] :created_at "Wed Jan 11 10:17:28 +0000 2017"}
-{:tweet-id "114729583239050123" :user "ClojurianY" :text "Official #Neo4j Driver for Python 1.1.0 beta 4 has just been released" :retweeted false :coordinates [27.2550316 -80.1666784] :created_at "Wed Jan 11 12:21:11 +0000 2017"}
-{:tweet-id "114729583239050542" :user "ClojurianY" :text "Learn live! \"getless - better every day\" https://www.livecoding.oftware #agile #Clojure" :retweeted false :coordinates [27.2550316 -80.1666784] :created_at "Wed Jan 11 12:30:25 +0000 2017"}
-EOT
-Connection closed by foreign host.
-$
+{:foo 1}
+{:foo 1}
+{:foo 1}
 ```
 
-3. Verify the generated log for the received events
-
+Verify generated log for new incoming events:
 ```
-16:54:42.081 [NioProcessor-2] INFO  o.a.m.filter.logging.LoggingFilter - CREATED
-16:54:42.083 [NioProcessor-2] INFO  o.a.m.filter.logging.LoggingFilter - OPENED
-16:54:52.796 [NioProcessor-2] INFO  o.a.m.filter.logging.LoggingFilter - RECEIVED: HeapBuffer[pos=0 lim=900 cap=4096: 7B 3A 74 78 20 22 6C 6F 67 69 6E 22 20 3A 74 69...]
-16:54:52.801 [NioProcessor-2] DEBUG o.a.m.f.codec.ProtocolCodecFilter - Processing a MESSAGE_RECEIVED for session 1
-16:54:52.816 [NioProcessor-2] INFO  o.a.m.filter.logging.LoggingFilter - RECEIVED: HeapBuffer[pos=0 lim=254 cap=4096: 7B 3A 74 77 65 65 74 2D 69 64 20 22 31 31 34 37...]
-16:54:52.816 [NioProcessor-2] DEBUG o.a.m.f.codec.ProtocolCodecFilter - Processing a MESSAGE_RECEIVED for session 1
-Received event : {:tx "login", :time #inst "2017-01-11T17:29:34.712-00:00", :user "schatsi", :host "tirio", :caudal/latency 2098653, :count 1}
-Received event : {:tx "login", :time #inst "2017-01-11T17:29:35.145-00:00", :user "imushroom", :host "andromeda", :caudal/latency 12395903, :count 2}
-Received event : {:tweet-id "114729583239036718", :user "ClojurianX", :text "How to use a charting library in Reagent http://buff.ly/2i0q23R  #clojure #chart #reagent", :retweeted false, :coordinates [19.3660316 -99.1843784], :created_at "Wed Jan 11 10:07:23 +0000 2017", :caudal/latency 11766637, :count 3}
-Received event : {:tweet-id "114729583239036819", :user "ClojurianX", :text "Why #Clojure is better than C, Python,Ruby and Java and why should you care", :retweeted true, :coordinates [19.3660316 -99.1843784], :created_at "Wed Jan 11 10:17:28 +0000 2017", :caudal/latency 24829791, :count 4}
-Received event : {:tweet-id "114729583239050123", :user "ClojurianY", :text "Official #Neo4j Driver for Python 1.1.0 beta 4 has just been released", :retweeted false, :coordinates [27.2550316 -80.1666784], :created_at "Wed Jan 11 12:21:11 +0000 2017", :caudal/latency 25634089, :count 5}
-Received event : {:tweet-id "114729583239050542", :user "ClojurianY", :text "Learn live! \"getless - better every day\" https://www.livecoding. #software #agile #Clojure", :retweeted false, :coordinates [27.2550316 -80.1666784], :created_at "Wed Jan 11 12:30:25 +0000 2017", :caudal/latency 25721860, :count 6}
-16:55:08.029 [NioProcessor-2] INFO  o.a.m.filter.logging.LoggingFilter - RECEIVED: HeapBuffer[pos=0 lim=5 cap=2048: 45 4F 54 0D 0A]
-16:55:08.029 [NioProcessor-2] DEBUG o.a.m.f.codec.ProtocolCodecFilter - Processing a MESSAGE_RECEIVED for session 1
-16:55:08.032 [NioProcessor-2] INFO  o.a.m.filter.logging.LoggingFilter - CLOSED
+2018-03-05 18:51:03.484 INFO  [clojure-agent-send-pool-1] streams.stateless - {:foo 1, :caudal/latency 747057, :event-count 1}
+2018-03-05 18:51:04.465 INFO  [clojure-agent-send-pool-2] streams.stateless - {:foo 1, :caudal/latency 790930, :event-count 2}
+2018-03-05 18:51:05.053 INFO  [clojure-agent-send-pool-3] streams.stateless - {:foo 1, :caudal/latency 705925, :event-count 3}
 ```
 
-Note that for every received event the attribute 'count' was added containing the current count
+Note that for every received event the attribute ':event-count' was added containing the current count.
 
+## smap
 
-## Setting up a transformer streamer
+Takes each event and transform it. Is a stateless streamer function.
 
-1. Edit **config/caudal-config.clj** file to configure a **smap** streamer that transform every received event message applying a transformation function to them
+### Configuration
+```clojure
+;; macro ;; var-name  ;; backpressure
+(defsink my-sink     1 
+         (smap [(fn [event] (assoc event :key "value"))]))
 ```
-(ns caudal-labs)
+Receives a vector with an arity 1 function, such that, propagates as new event the result of apply function to event.
 
-(require '[mx.interware.caudal.streams.common :refer :all])
-(require '[mx.interware.caudal.streams.stateful :refer :all])
-(require '[mx.interware.caudal.streams.stateless :refer :all])
+### Example
 
-(defn calculate-iva [event]
+Write following configuration in `config/` directory:
+```clojure config/streamer-smap.clj
+;; Requires
+(ns caudal.example.streamers
+  (:require
+   [mx.interware.caudal.io.rest-server :refer :all]
+   [mx.interware.caudal.streams.common :refer :all]
+   [mx.interware.caudal.streams.stateful :refer :all]
+   [mx.interware.caudal.streams.stateless :refer :all]))
+
+;; Listeners
+(deflistener tcp [{:type 'mx.interware.caudal.io.tcp-server 
+                   :parameters {:port        9900
+                                :idle-period 60}}])
+
+(defn calculate-tax [event]
   (let [ammount (:ammount event)
-        iva     (* 0.16 ammount)
-        total   (+ ammount iva)]
-    (assoc event {:iva iva :total total})))
+        tax     (* 0.16 ammount)
+        total   (+ ammount tax)]
+    (assoc event :tax tax :total total)))
 
-(defsink streamer-1 10000
-  (smap [calculate-iva]
-        (printe ["Transformed event : "])))
+;; Sinks
+(defsink example 1 ;; backpressure
+  (smap [calculate-tax]
+           (->INFO [:all])))
 
-(deflistener tcp-listener [{:type 'mx.interware.caudal.io.tcp-server 
-                            :parameters {:port 9900
-                                         :idle-period 60}}])
-
-(wire [tcp-listener] [streamer-1])
+;; Wire
+(wire [tcp] [example])
 ```
 
-
-## Testing the transformer streamer
-
-1. Restart Caudal for applying changes in configuration
-
+Run Caudal passing this file as config:
 ```
-mactirio:caudal-labs axis$ ./bin/start-caudal.sh -c ./config/caudal-config.clj
-Verifying JAVA instalation ...
-...
-16:57:49.825 [main] INFO  mx.interware.caudal.core.starter-dsl - {:loading-dsl {:file ./config/caudal-config.clj}}
-16:57:51.001 [main] INFO  mx.interware.caudal.io.tcp-server - Starting server on port :  9900  ...
-
+$ bin/caudal -c config/streamer-smap.clj start
 ```
 
-2. Open another terminal and send some event message through the Caudal **tcp** channel running on port **9900**
+Open a telnet to `localhost` port `9900`:
+```
+$ telnet localhost 9900
+```
 
+And write an EDN map as follow:
 ```
 $ telnet localhost 9900
 Trying ::1...
 Connected to localhost.
 Escape character is '^]'.
-{:tx "sale" :product "CDTO-12" :price 12.50}
-{:tx "sale" :product "JTAP-01" :price 23.30}
+{:product "kiwi" :ammount 10}
 ```
 
-3. Verify the generated log for the received events
+Verify generated log for new incoming event:
 
 ```
-17:02:48.033 [NioProcessor-2] INFO  o.a.m.filter.logging.LoggingFilter - RECEIVED: HeapBuffer[pos=0 lim=46 cap=4096: 7B 3A 74 78 20 22 73 61 6C 65 22 20 3A 70 72 6F...]
-17:02:48.035 [NioProcessor-2] DEBUG o.a.m.f.codec.ProtocolCodecFilter - Processing a MESSAGE_RECEIVED for session 1
-Transformed event : {:tx "sale", :product "CDTO-12", :price 12.5, :caudal/latency 676227, :iva 2.0, :total 14.5}
-17:02:54.446 [NioProcessor-2] INFO  o.a.m.filter.logging.LoggingFilter - RECEIVED: HeapBuffer[pos=0 lim=46 cap=4096: 7B 3A 74 78 20 22 73 61 6C 65 22 20 3A 70 72 6F...]
-17:02:54.446 [NioProcessor-2] DEBUG o.a.m.f.codec.ProtocolCodecFilter - Processing a MESSAGE_RECEIVED for session 1
-Transformed event : {:tx "sale", :product "JTAP-01", :price 23.3, :caudal/latency 433533, :iva 3.728, :total 27.028000000000002}
+2018-03-05 18:30:55.618 INFO  [clojure-agent-send-pool-1] streams.stateless - {:product "kiwi", :ammount 10, :caudal/latency 1815598, :tax 1.6, :total 11.6}
 ```
 
+As you can see, `smap` streamer transform every event adding two new fields `:tax` and `:total`.
 
-## Setting up an event filter streamer
 
-1. Modify **config/caudal-config.clj** configuration file so that streamer sink **streamer-1** is set as shown. Only events having **tweet-id** attribute should be counted.
+## where
+Filter events using a conditional predicate. Is a stateless streamer function.
+
+### Configuration
+```clojure
+;; macro ;; var-name  ;; backpressure
+(defsink my-sink     1 
+         (where [(countains? % :foo)]
+              (->INFO[:all])))
 ```
-...
-(defsink streamer-1 10000
+Receives a vector with a conditional, if true execute the nested code.
+
+### Example
+
+Write following configuration in `config/` directory:
+```clojure config/streamer-where.clj
+;; Requires
+(ns caudal.example.streamers
+  (:require
+   [mx.interware.caudal.io.rest-server :refer :all]
+   [mx.interware.caudal.streams.common :refer :all]
+   [mx.interware.caudal.streams.stateful :refer :all]
+   [mx.interware.caudal.streams.stateless :refer :all]))
+
+;; Listeners
+(deflistener tcp [{:type 'mx.interware.caudal.io.tcp-server 
+                   :parameters {:port        9900
+                                :idle-period 60}}])
+
+;; Sinks
+(defsink example 1 ;; backpressure
   (where [:tweet-id]
-         (counter [:tweet-counter :count]
-                  (printe ["Received tweet : "]))))
-...
+         (counter [:tweet-count :count]
+                  (->INFO [:all]))))
+
+;; Wire
+(wire [tcp] [example])
 ```
 
-
-## Testing event filter streamer
-
-1. Restart Caudal for applying changes in configuration
-
+Run Caudal passing this file as config:
 ```
-$ ./bin/start-caudal.sh -c ./config/caudal-config.clj
-Verifying JAVA instalation ...
-...
-17:05:31.472 [main] INFO  mx.interware.caudal.core.starter-dsl - {:loading-dsl {:file ./config/caudal-config.clj}}
-17:05:32.648 [main] INFO  mx.interware.caudal.io.tcp-server - Starting server on port :  9900  ...
+$ bin/caudal -c config/streamer-where.clj start
 ```
 
-2. Open another terminal and send the events shown below through the **tcp channel**
+Open a telnet to `localhost` port `9900`:
+```
+$ telnet localhost 9900
+```
+
+And write some EDN maps as follow:
 ```
 $ telnet localhost 9900
 Trying ::1...
 Connected to localhost.
 Escape character is '^]'.
-{:tx "login" :time #inst"2017-01-11T17:29:34.712-00:00" :user "schatsi" :host "tirio"}
-{:tx "login" :time #inst"2017-01-11T17:29:35.145-00:00" :user "imushroom" :host "andromeda"}
-{:tweet-id "114729583239036718" :user "ClojurianX" :text "How to use a charting library in Reagent http://buff.ly/2i0q23R  #clojure #chart #reagent" :retweeted false :coordinates [19.3660316 -99.1843784] :created_at "Wed Jan 11 10:07:23 +0000 2017"}
-{:tweet-id "114729583239036819" :user "ClojurianX" :text "Why #Clojure is better than C, Python,Ruby and Java and why should you care" :retweeted true :coordinates [19.3660316 -99.1843784] :created_at "Wed Jan 11 10:17:28 +0000 2017"}
-{:tweet-id "114729583239050123" :user "ClojurianY" :text "Official #Neo4j Driver for Python 1.1.0 beta 4 has just been released" :retweeted false :coordinates [27.2550316 -80.1666784] :created_at "Wed Jan 11 12:21:11 +0000 2017"}
-{:tweet-id "114729583239050542" :user "ClojurianY" :text "Learn live! \"getless - better every day\" https://www.livecoding. #software #agile #Clojure" :retweeted false :coordinates [27.2550316 -80.1666784] :created_at "Wed Jan 11 12:30:25 +0000 2017"}
-...
+{:tweet-id 1 :text "Hello"}
+{:tweet-id 2 :text "World"}
+{:tweet-id false :text "!!"}
+{:tweet-id nil :text "!!"}
+{:text "!!"}
+{:tweet-id "ok" :text "!!"}
 ```
 
-3. Verify the generated log for the received events
+Verify generated log for new incoming events:
 ```
-...
-Received tweet : {:tweet-id "114729583239036718", :user "ClojurianX", :text "How to use a charting library in Reagent http://buff.ly/2i0q23R  #clojure #chart #reagent", :retweeted false, :coordinates [19.3660316 -99.1843784], :created_at "Wed Jan 11 10:07:23 +0000 2017", :caudal/latency 614706, :count 1}
-Received tweet : {:tweet-id "114729583239036819", :user "ClojurianX", :text "Why #Clojure is better than C, Python,Ruby and Java and why should you care", :retweeted true, :coordinates [19.3660316 -99.1843784], :created_at "Wed Jan 11 10:17:28 +0000 2017", :caudal/latency 19507629, :count 2}
-Received tweet : {:tweet-id "114729583239050123", :user "ClojurianY", :text "Official #Neo4j Driver for Python 1.1.0 beta 4 has just been released", :retweeted false, :coordinates [27.2550316 -80.1666784], :created_at "Wed Jan 11 12:21:11 +0000 2017", :caudal/latency 20246520, :count 3}
-Received tweet : {:tweet-id "114729583239050542", :user "ClojurianY", :text "Learn live! \"getless - better every day\" https://www.livecoding. #software #agile #Clojure", :retweeted false, :coordinates [27.2550316 -80.1666784], :created_at "Wed Jan 11 12:30:25 +0000 2017", :caudal/latency 20207344, :count 4}
-...
+2018-03-05 19:13:28.642 INFO  [clojure-agent-send-pool-1] streams.stateless - {:tweet-id 1, :text "Hello", :caudal/latency 652919, :count 1}
+2018-03-05 19:13:52.874 INFO  [clojure-agent-send-pool-2] streams.stateless - {:tweet-id 2, :text "World", :caudal/latency 802505, :count 2}
+2018-03-05 19:15:01.228 INFO  [clojure-agent-send-pool-0] streams.stateless - {:tweet-id "ok", :text "!!", :caudal/latency 436745, :count 3}
 ```
 
-As you can see, this time the counter came only up to 4
+As you can see, this time the counter came only up to 3
 
 
-## Setting up an event classifier streamer
+## by
+Streamer function that groups events by values of sent keys.  Is a stateless streamer function.
 
-1. Modify **config/caudal-config.clj** configuration file so that streamer sink **streamer-1** is set as shown. Events having **tweet-id** attribute should be classified by **:user** attribute and then counted.
+### Configuration
+```clojure
+;; macro ;; var-name  ;; backpressure
+(defsink my-sink     1 
+      (by [:id]
+           (counter [:s-count :e-count])))
 ```
-...
-(defsink streamer-1 10000
-  (where [:tweet-id]
-         (by [:user]
-             (counter [:tweet-counter :count]
-                      (printe ["Received tweet : "])))))
-...
+Receives a vector with keys to classfify the nested code, such that, nested code runs independently to each classification.
+
+### Example
+
+Write following configuration in `config/` directory:
+```clojure config/streamer-by.clj
+;; Requires
+(ns caudal.example.streamers
+  (:require
+   [mx.interware.caudal.io.rest-server :refer :all]
+   [mx.interware.caudal.streams.common :refer :all]
+   [mx.interware.caudal.streams.stateful :refer :all]
+   [mx.interware.caudal.streams.stateless :refer :all]))
+
+;; Listeners
+(deflistener tcp [{:type 'mx.interware.caudal.io.tcp-server 
+                   :parameters {:port        9900
+                                :idle-period 60}}])
+
+;; Sinks
+(defsink example 1 ;; backpressure
+  (by [:tweet-id]
+         (counter [:tweet-count :count]
+                  (->INFO [:all]))))
+
+;; Wire
+(wire [tcp] [example])
 ```
 
-
-## Testing event calssifier streamer
-
-1. Restart Caudal for applying changes in configuration
-
+Run Caudal passing this file as config:
 ```
-$ ./bin/start-caudal.sh -c ./config/caudal-config.clj
-Verifying JAVA instalation ...
-...
-17:10:43.179 [main] INFO  mx.interware.caudal.core.starter-dsl - {:loading-dsl {:file ./config/caudal-config.clj}}
-17:10:44.588 [main] INFO  mx.interware.caudal.io.tcp-server - Starting server on port :  9900  ...
+bin/caudal -c config/streamer-by.clj start
 ```
 
-2. Open another terminal and send through the **tcp channel** the events shown below
+Open a telnet to `localhost` port `9900`:
+```
+$ telnet localhost 9900
+```
+
+And write some EDN maps as follow:
 ```
 $ telnet localhost 9900
 Trying ::1...
 Connected to localhost.
 Escape character is '^]'.
-{:tx "login" :time #inst"2017-01-11T17:29:34.712-00:00" :user "schatsi" :host "tirio"}
-{:tx "login" :time #inst"2017-01-11T17:29:35.145-00:00" :user "imushroom" :host "andromeda"}
-{:tweet-id "114729583239036718" :user "ClojurianX" :text "How to use a charting library in Reagent http://buff.ly/2i0q23R  #clojure #chart #reagent" :retweeted false :coordinates [19.3660316 -99.1843784] :created_at "Wed Jan 11 10:07:23 +0000 2017"}
-{:tweet-id "114729583239036819" :user "ClojurianX" :text "Why #Clojure is better than C, Python,Ruby and Java and why should you care" :retweeted true :coordinates [19.3660316 -99.1843784] :created_at "Wed Jan 11 10:17:28 +0000 2017"}
-{:tweet-id "114729583239050123" :user "ClojurianY" :text "Official #Neo4j Driver for Python 1.1.0 beta 4 has just been released" :retweeted false :coordinates [27.2550316 -80.1666784] :created_at "Wed Jan 11 12:21:11 +0000 2017"}
-{:tweet-id "114729583239050542" :user "ClojurianY" :text "Learn live! \"getless - better every day\" https://www.livecoding. #software #agile #Clojure" :retweeted false :coordinates [27.2550316 -80.1666784] :created_at "Wed Jan 11 12:30:25 +0000 2017"}
-...
+{:tweet-id 1 :text "Hello"}
+{:tweet-id 2 :text "Hello"}
+{:tweet-id 3 :text "Hello"}
+{:tweet-id 2 :text "World"}
+{:tweet-id 1 :text "World"}
+{:tweet-id 1 :text "Hello"}
 ```
 
-3. Verify the generated log for the received events
+Verify generated log for new incoming events:
 ```
-...
-17:11:26.443 [NioProcessor-2] INFO  o.a.m.filter.logging.LoggingFilter - RECEIVED: HeapBuffer[pos=0 lim=900 cap=4096: 7B 3A 74 78 20 22 6C 6F 67 69 6E 22 20 3A 74 69...]
-17:11:26.447 [NioProcessor-2] DEBUG o.a.m.f.codec.ProtocolCodecFilter - Processing a MESSAGE_RECEIVED for session 1
-17:11:26.456 [NioProcessor-2] INFO  o.a.m.filter.logging.LoggingFilter - RECEIVED: HeapBuffer[pos=0 lim=254 cap=4096: 7B 3A 74 77 65 65 74 2D 69 64 20 22 31 31 34 37...]
-17:11:26.456 [NioProcessor-2] DEBUG o.a.m.f.codec.ProtocolCodecFilter - Processing a MESSAGE_RECEIVED for session 1
-Received tweet : {:tweet-id "114729583239036718", :user "ClojurianX", :text "How to use a charting library in Reagent http://buff.ly/2i0q23R  #clojure #chart #reagent", :retweeted false, :coordinates [19.3660316 -99.1843784], :created_at "Wed Jan 11 10:07:23 +0000 2017", :caudal/latency 392488, :count 1}
-Received tweet : {:tweet-id "114729583239036819", :user "ClojurianX", :text "Why #Clojure is better than C, Python,Ruby and Java and why should you care", :retweeted true, :coordinates [19.3660316 -99.1843784], :created_at "Wed Jan 11 10:17:28 +0000 2017", :caudal/latency 20958119, :count 2}
-Received tweet : {:tweet-id "114729583239050123", :user "ClojurianY", :text "Official #Neo4j Driver for Python 1.1.0 beta 4 has just been released", :retweeted false, :coordinates [27.2550316 -80.1666784], :created_at "Wed Jan 11 12:21:11 +0000 2017", :caudal/latency 19182546, :count 1}
-Received tweet : {:tweet-id "114729583239050542", :user "ClojurianY", :text "Learn live! \"getless - better every day\" https://www.livecoding. #software #agile #Clojure", :retweeted false, :coordinates [27.2550316 -80.1666784], :created_at "Wed Jan 11 12:30:25 +0000 2017", :caudal/latency 19235139, :count 2}
-...
+2018-03-05 19:45:22.258 INFO  [clojure-agent-send-pool-1] streams.stateless - {:tweet-id 1, :text "Hello", :caudal/latency 2896923, :count 1}
+2018-03-05 19:45:39.660 INFO  [clojure-agent-send-pool-2] streams.stateless - {:tweet-id 2, :text "Hello", :caudal/latency 804470, :count 1}
+2018-03-05 19:46:03.188 INFO  [clojure-agent-send-pool-3] streams.stateless - {:tweet-id 3, :text "Hello", :caudal/latency 877918, :count 1}
+2018-03-05 19:46:29.936 INFO  [clojure-agent-send-pool-4] streams.stateless - {:tweet-id 2, :text "World", :caudal/latency 697957, :count 2}
+2018-03-05 19:46:46.604 INFO  [clojure-agent-send-pool-5] streams.stateless - {:tweet-id 1, :text "World", :caudal/latency 523277, :count 2}
+2018-03-05 19:46:49.927 INFO  [clojure-agent-send-pool-0] streams.stateless - {:tweet-id 1, :text "Hello", :caudal/latency 659900, :count 3}
 ```
 
-As you can see, this time the counter came up to 2 for both kind of events, those having user 'ClojurianX' and 'ClojurianY'
+As you can see, this time the `counter` value is independent for each `:tweet-id`.
 
