@@ -33,17 +33,17 @@ Write following configuration in `config/` directory, and enjoy comments:
 ;; Listeners
 (deflistener twitter [{:type       'mx.interware.caudal.io.twitter
                        :parameters {:name            "MyCaudalExample"
-                                    :consumer-key    "CoNsuMerKey"     
-                                    :consumer-secret "CoNsUmErSeCrEt"
-                                    :token           "00000000-AcCeSsToKeN"
-                                    :token-secret    "AcCeSsToKeNsEcReT"
+                                    :consumer-key    "RQOsRtxK1KRA5h4eCdXCmwHFl"
+                                    :consumer-secret "fiT1m3IJcwFlkVYW4KnlqrR72icDlrqBEO64NFbjzE3ZFGaxQy"
+                                    :token           "18731065-JTxGKm5Kd6M772c0Aq1gJvSEipqf3iGSanS3piX64"
+                                    :token-secret    "j5Dye3Rx6R3aDfUwpxc3CrJhRG2Twf9SxTRtJp5uVPkMQ"
                                     :terms           ["selfie" "beach" "travel"]}}])
 
 ;; Prune a lot of data of incoming twitter event
 ;; Search for tweets with geolocation enabled and not replies or quotes
 (defn prune-data [event]
   (let [{:keys [coordinates user text in_reply_to_screen_name is_quote_status in_reply_to_status_id_str]} event
-        [lat lon] (:coordinates coordinates)]
+        [lon lat] (:coordinates coordinates)]
     (if-not (and in_reply_to_screen_name is_quote_status in_reply_to_status_id_str)
       (if coordinates
         {:user (:screen_name user)
@@ -63,8 +63,9 @@ Write following configuration in `config/` directory, and enjoy comments:
       es-store-fn        (elastic-store! [es-url es-index-name es-mapping-name es-mapping {}])]
   (defsink example 1 ;; backpressure
     (smap [prune-data]
-          (->INFO [:all]
-                  es-store-fn))))
+          (time-stampit[:timestamp]
+                       (->INFO [:all]
+                               es-store-fn)))))
 
 ;; Wire
 (wire [twitter] [example])
