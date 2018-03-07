@@ -33,10 +33,10 @@ Write following configuration in `config/` directory, and enjoy comments:
 ;; Listeners
 (deflistener twitter [{:type       'mx.interware.caudal.io.twitter
                        :parameters {:name            "MyCaudalExample"
-                                    :consumer-key    "RQOsRtxK1KRA5h4eCdXCmwHFl"
-                                    :consumer-secret "fiT1m3IJcwFlkVYW4KnlqrR72icDlrqBEO64NFbjzE3ZFGaxQy"
-                                    :token           "18731065-JTxGKm5Kd6M772c0Aq1gJvSEipqf3iGSanS3piX64"
-                                    :token-secret    "j5Dye3Rx6R3aDfUwpxc3CrJhRG2Twf9SxTRtJp5uVPkMQ"
+                                    :consumer-key    "CoNsuMerKey"
+                                    :consumer-secret "CoNsUmErSeCrEt"
+                                    :token           "00000000-AcCeSsToKeN"
+                                    :token-secret    "AcCeSsToKeNsEcReT"
                                     :terms           ["selfie" "beach" "travel"]}}])
 
 ;; Prune a lot of data of incoming twitter event
