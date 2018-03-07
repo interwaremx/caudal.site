@@ -6,7 +6,7 @@ Retrieve and produce statistics from your configuration.
  * [Listeners](lab1.html)
  * [Streamers](lab3.html)
 
-## Count
+## count
 ### Counting events
 This section explains how to count each event received.
 
@@ -163,7 +163,7 @@ Update configuration file to use **deflistener** streamer as follows:
 
 Run your configuration using:
 ```#bash
-$ bin/start-caudal.sh -c ./config/stats.clj
+$ bin/caudal -c config/stats.clj start
 ```
 
 Test your configuration sending some events with telnet:
@@ -184,7 +184,7 @@ Verify generated log. Your event counter starts its value using dumped file:
 
 Stop Caudal using `Ctrl-C`.
 
-## Standard Deviation
+## welford
 ### Statistics of events
 This section explains how to get mean, variance, and standard deviation from events.
 
