@@ -27,7 +27,7 @@ Get the binary file for the lastest Caudal distribution at [downloads section](d
 
 ```#bash
 $ wget https://interwaremx.github.io/caudal.docs/downloads/caudal-0.7.14.tar.gz
-$ tar xvfz caudal-0.7.14.tar.gz
+$ tar xzvf caudal-0.7.14.tar.gz
 ```
 
 ### Running
