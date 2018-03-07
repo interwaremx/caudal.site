@@ -11,21 +11,21 @@ Instalar Caudal es bastante sencillo. Siempre, necesitas tener instaladas alguna
 
 Hay varias distribuciones binarias de Caudal. Se encuentran empaquetadas en forma de archivos con compresión tar.
 
-### Descargando
+### Descargar
 
 Obtén el archivo binario para la última distribición de Caudal desde la [sección de Descargas](https://interwaremx.github.io/caudal.docs/downloads/)
 ```txt
 $ wget https://interwaremx.github.io/caudal.docs/downloads/caudal-0.7.14.tar.gz
 ```
 
-### Desempaquetando
+### Desempaquetar
 
 Desempaqueta el archivo descargado, el cual crea el directorio de instalación.
 ```
 $ tar xzvf caudal-0.7.14.tar.gz
 ```
 
-### Arrancando
+### Iniciar
 1. Inicia el servidor Caudal
 ```
 $ cd caudal-0.7.14/
@@ -65,16 +65,16 @@ $
 ```
 7. Detén Caudal usando `Ctrl-C`
 
-## Instalacion por git repositorio
+## Instalación por git repositorio
 Puedes iniciar una configuración de Caudal desde las fuentes, gratuitamente desde [github](https://github.com/interwaremx/caudal).
 
-### Descargando
+### Descargar
 Usa **git** para descargar la última versión de Caudal.
 ```
 $ git clone https://github.com/interwaremx/caudal
 ```
 
-### Construyendo
+### Compilar
 
 1. Utilice el script `make-distro.sh` para compilar y crear un proyectos, tal vez demore algunos minutos:
 ```
