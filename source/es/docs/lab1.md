@@ -1,120 +1,270 @@
-title: Lab 1 - Instalación para ambiente de desarrollo
+title: Lab 1 - Listeners (Escuchas)
 ---
-Una guía usada para iniciar proyectos nuevo de Caudal.
+
+Los Listeners toman una fuente de datos y alimentan nuestro Caudal.
 
 ## Requerimientos
- * [Java 1.8 (OpenJDK or OracleJDK)](java.html)
- * [Leiningen 2.6.1](leiningen.html)
+ * [Instalación](setup.html)
+ * [Configuración](configuration.html)
 
-## Construyendo
-1. Crea un proyecto nuevo llamado **caudal-labs** desde **caudal-template**
-```txt
-$ lein new caudal-template caudal-labs
-Generating fresh 'lein new' caudal-template project.
+## Configuration
+Caudal define una macro llamada `deflistener` para declarar un nuevo listener, recibe como parametro un vector con un mapa que contiene `:type` y `:parameters`
+
+```clojure
+;; macro     ;; var-name  ;; listener-type
+(deflistener foo-listener [{:type 'mx.interware.caudal.io.listener 
+                            :parameters {:param1 "a"       ;; Ad-hoc params
+                                         :param2 "b" ...}}])
 ```
 
-2. Cambia el directorio actual al del proyecto creado recientemente
-```txt
-$ cd caudal-labs/
+| Elemento      | Descripción   |
+| ------------- | ------------- |
+| foo-listener  | Nombre del listener. Un archivo de configuración puede tener un o mas listeners. 1
+| :type         | Simbolo que apunta a una implementacion de listener valida. Véase `mx.interware.caudal.io` en la sección [API](.../api). |
+| :parameters   | Mapa con los parametros acorde con el uso del listener. |
+
+
+### TCP
+En [Configuración](configuration.html) usamos la macro `deflistener` para definir un canal TCP en el puerto 9900:
+
+```clojure
+(deflistener tcp [{:type 'mx.interware.caudal.io.tcp-server
+                   :parameters {:port        9900 
+                                :idle-period 60}}])
 ```
 
-3. Transfiere todas las dependencias al directorio **lib**
-```txt
-$ lein libdir
-Copied 143 file(s) to: /projects/caudal-labs/lib
+| Parametro     | Descripción   |
+| ------------- | ------------- |
+| :port         | Numero de puerto (1-65535) para escuchar eventos. Los eventos entrantes son recibidos en formato [EDN] (https://learnxinyminutes.com/docs/edn/) .|
+| :idle-period  | Idle period for socket. |
+
+### Configuración
+
+Escribe la siguiente configuración en el directorio `config/`:
+
+```clojure config/example-tcp.clj
+;; Requires
+(ns caudal.example.tcp
+  (:require
+   [mx.interware.caudal.io.rest-server :refer :all]
+   [mx.interware.caudal.streams.common :refer :all]
+   [mx.interware.caudal.streams.stateful :refer :all]
+   [mx.interware.caudal.streams.stateless :refer :all]))
+
+;; Listeners
+(deflistener tcp [{:type 'mx.interware.caudal.io.tcp-server
+                   :parameters {:port 9900
+                                :idle-period 60}}])
+;; Sinks
+(defsink example 1 ;; backpressure
+  (->INFO [:all]))
+
+;; Wire
+(wire [tcp] [example])
 ```
 
-4. Construye el nuevo proyecto **caudal-labs**
-```txt
-$ lein jar
-Warning: specified :main without including it in :aot.
-Implicit AOT of :main will be removed in Leiningen 3.0.0.
-If you only need AOT for your uberjar, consider adding :aot :all into your
-:uberjar profile instead.
-Compiling caudal-labs.custom
-Warning: The Main-Class specified does not exist within the jar. It may not be executable as expected. A gen-class directive may be missing in the namespace which contains the main method.
-Created /projects/caudal-labs/target/caudal-labs-0.1.2-SNAPSHOT.jar
+Inicia Caudal pasando el archivo creado como config:
+```
+$ bin/caudal  -c config/example-tcp.clj start
 ```
 
-5. Copia el jar del proyecto en el directorio **lib**
-```txt
-$ cp target/caudal-labs-0.1.2-SNAPSHOT.jar lib/
+Abre un telenet to `localhost` al puerto `9900`:
+```
+$ telnet localhost 9900
 ```
 
-## Arrancando
-
-1. Inicia el proyecto Caudal usando la configuración por defecto desde el archivo **./config/caudal-config.clj**
-```txt
-$ ./bin/start-caudal.sh -c ./config/caudal-config.clj
-Verifying JAVA instalation ...
-/usr/bin/java
-JAVA executable found in PATH
-JAVA Version : 1.8.0_91
-BIN path /projects/caudal-labs/bin
-Starting Caudal from /projects/caudal-labs
-                        __      __
-  _________ ___  ______/ /___ _/ /
- / ___/ __ `/ / / / __  / __ `/ /
-/ /__/ /_/ / /_/ / /_/ / /_/ / /
-\___/\__,_/\__,_/\__,_/\__,_/_/
-
-Caudal 0.7.4-SNAPSHOT
-log4j:WARN [stdout] should be System.out or System.err.
-log4j:WARN Using previously set target, System.out by default.
-log4j:WARN [stdout] should be System.out or System.err.
-log4j:WARN Using previously set target, System.out by default.
-SLF4J: Class path contains multiple SLF4J bindings.
-SLF4J: Found binding in [jar:file:/projects/caudal-labs/lib/logback-classic-1.1.3.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: Found binding in [jar:file:/projects/caudal-labs/lib/slf4j-log4j12-1.7.5.jar!/org/slf4j/impl/StaticLoggerBinder.class]
-SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
-SLF4J: Actual binding is of type [ch.qos.logback.classic.util.ContextSelectorStaticBinder]
-15:15:08.327 [main] INFO  mx.interware.caudal.core.starter-dsl - {:loading-dsl {:file ./config/caudal-config.clj}}
-15:15:09.711 [main] INFO  mx.interware.caudal.io.tcp-server - Starting server on port :  9900  ...
-15:15:09.767 [main] INFO  mx.interware.caudal.io.tailer-server - Tailing files :  (/projects/caudal-labs/./data/input.txt)  ...
-15:15:09.775 [main] INFO  mx.interware.caudal.io.tailer-server - Channel created for file  input.txt  - > channel :  #object[clojure.core.async.impl.channels.ManyToManyChannel 0x8d7b252 clojure.core.async.impl.channels.ManyToManyChannel@8d7b252]
-15:15:09.855 [main] INFO  mx.interware.caudal.io.tailer-server - register-channels for tailer
-15:15:10.064 INFO  [org.quartz.core.QuartzScheduler] (main) Quartz Scheduler v.2.2.1 created.
-15:15:10.068 INFO  [org.quartz.core.QuartzScheduler] (main) Scheduler meta-data: Quartz Scheduler (v2.2.1) 'SimpleQuartzScheduler:-1011881444' with instanceId 'SIMPLE_NON_CLUSTERED:-1011881444'
-  Scheduler class: 'org.quartz.core.QuartzScheduler' - running locally.
-  NOT STARTED.
-  Currently in standby mode.
-  Number of jobs executed: 0
-  Using thread pool 'org.quartz.simpl.SimpleThreadPool' - with 5 threads.
-  Using job-store 'org.quartz.simpl.RAMJobStore' - which does not support persistence. and is not clustered.
-
-15:15:10.069 INFO  [org.quartz.core.QuartzScheduler] (main) Scheduler SimpleQuartzScheduler:-1011881444_$_SIMPLE_NON_CLUSTERED:-1011881444 started.
-15:15:10.069 INFO  [org.projectodd.wunderboss.scheduling.Scheduling] (main) Quartz started
+y escribe un mapa EDN como se muestra:
 ```
-
-## Probando
-1. Abre otra terminal y envía un evento de prueba usando el **tailer** de Caudal, agregando el mensaje al archivo **data/input.txt**
-```txt
-$ echo "{:host \"server1\" :service \"http\" :customer \"orinoco\" :id 42 :cost 14.2857}" > data/input.txt
-```
-
-2. Verifica la bitácora generada por el evento entrante
-```txt
-line :  {:host "server1" :service "http" :customer "orinoco" :id 42 :cost 14.2857}
-{:event-1 {:host server1, :service http, :customer orinoco, :id 42, :cost 14.2857, :caudal/latency 713696}}
-```
-
-3. Envía otro evento usando el canal **tcp** de Caudal corriendo en el puerto **9900**
-```txt
 $ telnet localhost 9900
 Trying ::1...
 Connected to localhost.
 Escape character is '^]'.
-{:host "server2" :service "ssl" :customer "amazonas" :id 101 :cost 28.5714}
+{:foo 1}
 ```
 
-4. Verifica la bitácora generada para el evento recibido
-```txt
-15:19:19.832 INFO  [org.apache.mina.filter.logging.LoggingFilter] (NioProcessor-2) CREATED
-15:19:19.832 INFO  [org.apache.mina.filter.logging.LoggingFilter] (NioProcessor-2) OPENED
-15:19:21.109 INFO  [org.apache.mina.filter.logging.LoggingFilter] (NioProcessor-2) RECEIVED: HeapBuffer[pos=0 lim=77 cap=4096: 7B 3A 68 6F 73 74 20 22 73 65 72 76 65 72 32 22...]
-{:event-1 {:host server2, :service ssl, :customer amazonas, :id 101, :cost 28.5714, :caudal/latency 268423}}
-MAIN - Customer    : {:host "server2", :service "ssl", :customer "amazonas", :id 101, :cost 28.5714, :caudal/latency 555964, :path "A good one"}
-MAIN - Adjusted *  : {:host "server2", :service "ssl", :customer "amazonas", :id 101, :cost 33.142824, :caudal/latency 555964, :path "A good one", :count 1}
-MAIN - Adjusted +  : {:host "server2", :service "ssl", :customer "amazonas", :id 101, :cost 133.142824, :caudal/latency 555964, :path "A good one", :count 1}
-MAIN - Timestamped : {:host "server2", :service "ssl", :customer "amazonas", :id 101, :cost 28.5714, :caudal/latency 555964, :path "A good one", :time 1485206361129}
+Verifica el log generado para el nuevo evento entrante:
 ```
+2018-01-02 22:55:15.295 INFO  [clojure-agent-send-pool-1] streams.stateless - {:foo 1, :caudal/latency 2546987}
+```
+
+### Tailer
+
+Lee una linea entrante desde un archivo, similar al comando `tail`.
+```clojure
+(deflistener tailer [{:type 'mx.interware.caudal.io.tailer-server
+                      :parameters {:parser       read-string 
+                                   :inputs       {:directory "." 
+                                                  :wildcard "*.log"}
+                                   :delta        200
+                                   :from-end     true
+                                   :reopen       true
+                                   :buffer-size  1024}}])
+```
+
+| Parameter     | Description   |
+| ------------- | ------------- |
+| :parser       | Función que recibe una nueva linea y regresa un EDN. `read-string` es util si tu log esta escrito en EDN. |
+| :inputs       | Mapa con `:directory` ruta de los archivos y `:wildcard` archivos a filtrar desde la cola .|
+| :delta        | Tiempo de actualización de archivo en milisegundos. |
+| :from-end     | Boolean, si es true ignora las entradas previas y solo lee las nuevas modificaciones, false para leer el archivo completo. |
+| :reopen       | Boolean, si es true abre los archivos si no existen, false se pierde el archivo. |
+| :buffer-size  | Número indicando los bytes a leer cada delta tiempo. |
+
+### Configuración
+
+Escribe la siguiente configuracion en el directorio `config/`:
+```clojure config/example-tailer.clj
+;; Requires
+(ns caudal.example.tcp
+  (:require
+   [mx.interware.caudal.io.rest-server :refer :all]
+   [mx.interware.caudal.streams.common :refer :all]
+   [mx.interware.caudal.streams.stateful :refer :all]
+   [mx.interware.caudal.streams.stateless :refer :all]))
+
+;; Listeners
+(deflistener tailer [{:type 'mx.interware.caudal.io.tailer-server
+                      :parameters {:parser read-string
+                                   :inputs  {:directory "."
+                                             :wildcard  "my-edn.log"}
+                                   :delta        200
+                                   :from-end     true
+                                   :reopen       true
+                                   :buffer-size  1024}}])
+;; Sinks
+(defsink example 1 ;; backpressure
+  (->INFO [:all]))
+
+;; Wire
+(wire [tailer] [example])
+```
+
+Inicia Caudal pasando el archivo creado como config:
+```
+$ bin/caudal -c config/example-tailer.clj start
+```
+
+En el directorio de Caudal, escribe un nuevo archivo `me-edn.log` con un simple EDN usando el siguiente comando:
+```
+$ bin/caudal -c config/example-tailer.clj start
+```
+
+Verifica el log generado para el nuevo evento:
+```
+2018-01-02 23:38:11.091 INFO  [main] io.tailer-server - {:tailing-files ()}
+2018-01-02 23:38:11.093 WARN  [main] io.tailer-server - {:files-not-found {:directory ".", :wildcard "my-edn.log"}}
+2018-01-02 23:38:21.199 INFO  [async-dispatch-2] io.tailer-server - {:added-files-to-tailer ("/opt/caudal-0.7.14/./my-edn.log")}
+2018-01-02 23:38:21.205 INFO  [clojure-agent-send-pool-1] streams.stateless - {:foo 1, :caudal/latency 1741426}
+```
+
+### Syslog
+Captura el log de salida usando el protocolo Syslog.
+```clojure
+(deflistener syslog [{:type 'mx.interware.caudal.io.syslog-server
+                      :parameters {:port 1111
+                                   :parser message-parser-fn}}])
+```
+| Paramereo     | Descripcion   |
+| ------------- | ------------- |
+| :port         | Numero del puerto (1-65535) para escuchar los eventos. Los eventos de entrada son recibidos con el protocolo Syslog |
+| :parser       | Función que recibe el mensaje del evento de Syslog y returna un EDN |
+
+### Log4j
+Captura el log de slida usando el framework Log4j.
+```clojure
+(deflistener log4j [{:type 'mx.interware.caudal.io.log4j-server
+                     :parameters {:port   2222
+                                  :parser message-parser-fn}}])
+
+```
+| Parametro     | Descripción   |
+| ------------- | ------------- |
+| :port         | Número del puerto (1-65535) para escuchar eventos. Eventos de entrada son recibidos en el protocolo Log4j |
+| :parser       | Funcion que recibe el mensaje del evento de Log4j y returna un EDN. |
+
+### Twitter
+Lee tweets desde la Twitter API.
+```clojure
+(deflistener twitter [{:type       'mx.interware.caudal.io.twitter
+                       :parameters {:name            "Caudal"
+                                    :consumer-key    "key----------------------"
+                                    :consumer-secret "consumer-secret-----------------------------------"
+                                    :token           "token---------------------------------------------"
+                                    :token-secret    "token-secret---------------------------------"
+                                    :terms           ["challenge"]}}])
+```
+| Parametro        | Descripción   |
+| ---------------- | ------------- |
+| :name            | String, representa el nombre de nuestra aplicación. Esta aplicación debe estar registrada en Twitter |
+| :consumer-key    | String, proporcionado por Twitter |
+| :consumer-secret | String, proporcionado por Twitter |
+| :token           | String, proporcionado por Twitter |
+| :token-secret    | String, proporcionado por Twitter |
+| :terms           | Vector, palabra clave para buscar un tweet |
+
+### Configuración
+
+Para obtener los keys y secrets de la API de Twitter, es necesario iniciar sesión con tu cuenta de Twitter.
+
+Ve a la pagina [Application Manager](https://apps.twitter.com/) y da click en el botón `Create New App`.
+
+![Create New APP](twitter-01.jpg)
+
+Llena los datos requeridos nombre, descripción y website. Callback URL no es necesario. Recuerda de leer y aceptar los terminos y condiciones de Twitter antes de dar click en el botón `Create your Twitter application`.
+
+![Create your Twitter application](twitter-02.jpg)
+
+Si tu aplicación es creada correctamente, veras la siguiente pantalla:
+
+![MyCaudalExample APP](twitter-03.jpg)
+
+Ve a la sección `Keys and Access Token` para obtener tu `Consumer Key` y `Consumer Secret`. Da click en el botón `Create my acces token` para obtener tu `Token` y `Token Secret Pair`.
+
+![Keys and Secrets](twitter-04.jpg)
+
+Escribe la siguiente configuración en el directorio `config/`
+
+```clojure config/example-twitter.clj
+;; Requires
+(ns caudal.example.tcp
+  (:require
+   [mx.interware.caudal.io.rest-server :refer :all]
+   [mx.interware.caudal.streams.common :refer :all]
+   [mx.interware.caudal.streams.stateful :refer :all]
+   [mx.interware.caudal.streams.stateless :refer :all]))
+
+;; Listeners
+(deflistener twitter [{:type       'mx.interware.caudal.io.twitter
+                       :parameters {:name            "MyCaudalExample"
+                                    :consumer-key    "CoNsuMerKey"
+                                    :consumer-secret "CoNsUmErSeCrEt"
+                                    :token           "00000000-AcCeSsToKeN"
+                                    :token-secret    "AcCeSsToKeNsEcReT"
+                                    :terms           ["WorldCup"]}}])
+
+;; Sinks
+(defsink example 1 ;; backpressure
+  (->INFO [:all]))
+
+;; Wire
+(wire [twitter] [example])
+```
+
+Inicia Caudal pasando el archivo creado como config:
+
+```
+$ bin/caudal -c config/example-twitter.clj start
+```
+
+Verifica el log generado para los eventos entrantes.
+```
+2018-03-03 01:23:15.241 INFO  [main] httpclient.BasicClient - New connection executed: MyCaudalExample, endpoint: /1.1/statuses/filter.json?delimited=length&stall_warnings=true
+2018-03-03 01:23:15.396 INFO  [hosebird-client-io-thread-0] httpclient.ClientBase - MyCaudalExample Establishing a connection
+log4j:WARN No appenders could be found for logger (org.apache.http.impl.conn.PoolingClientConnectionManager).
+log4j:WARN Please initialize the log4j system properly.
+log4j:WARN See http://logging.apache.org/log4j/1.2/faq.html#noconfig for more info.
+2018-03-03 01:23:48.358 INFO  [hosebird-client-io-thread-0] httpclient.ClientBase - MyCaudalExample Processing connection data
+2018-03-03 01:24:36.655 INFO  [clojure-agent-send-pool-1] streams.stateless - {:quote_count 0, :in_reply_to_screen_name nil, :is_quote_status false, :coordinates nil, :filter_level "low", :in_reply_to_status_id_str nil, :place nil, :timestamp_ms "1520061876356", :geo nil, :in_reply_to_status_id nil, :entities {:hashtags [{:text "WorldCup", :indices [18 27]}], :urls [], :user_mentions [{:screen_name "History_Newz", :name "History Newz", :id 881454090244501504, :id_str "881454090244501504", :indices [3 16]}], :symbols []}, :retweeted_status {:quote_count 0, :in_reply_to_screen_name nil, :is_quote_status false, :coordinates nil, :filter_level "low", :in_reply_to_status_id_str nil, :place nil, :possibly_sensitive false, :geo nil, :in_reply_to_status_id nil, :extended_tweet {:full_text "#WorldCup Countdown: 16 Weeks to Go - The Magical Magyars, the Best Team Never to Win the World Cup? https://t.co/gJQLuKnOZD https://t.co/UmBXRCQbjd", :display_text_range [0 124], :entities {:hashtags [{:text "WorldCup", :indices [0 9]}], :urls [{:url "https://t.co/gJQLuKnOZD", :expanded_url "https://goo.gl/3iahJG", :display_url "goo.gl/3iahJG", :indices [101 124]}], :user_mentions [], :symbols [], :media [{:sizes {:large {:w 660, :h 345, :resize "fit"}, :thumb {:w 150, :h 150, :resize "crop"}, :medium {:w 660, :h 345, :resize "fit"}, :small {:w 660, :h 345, :resize "fit"}}, :media_url_https "https://pbs.twimg.com/media/DXUkikZWsAA9q7w.jpg", :type "photo", :media_url "http://pbs.twimg.com/media/DXUkikZWsAA9q7w.jpg", :id 969721471072382976, :expanded_url "https://twitter.com/History_Newz/status/969721473437970433/photo/1", :url "https://t.co/UmBXRCQbjd", :display_url "pic.twitter.com/UmBXRCQbjd", :indices [125 148], :id_str "969721471072382976"}]}, :extended_entities {:media [{:sizes {:large {:w 660, :h 345, :resize "fit"}, :thumb {:w 150, :h 150, :resize "crop"}, :medium {:w 660, :h 345, :resize "fit"}, :small {:w 660, :h 345, :resize "fit"}}, :media_url_https "https://pbs.twimg.com/media/DXUkikZWsAA9q7w.jpg", :type "photo", :media_url "http://pbs.twimg.com/media/DXUkikZWsAA9q7w.jpg", :id 969721471072382976, :expanded_url "https://twitter.com/History_Newz/status/969721473437970433/photo/1", :url "https://t.co/UmBXRCQbjd", :display_url "pic.twitter.com/UmBXRCQbjd", :indices [125 148], :id_str "969721471072382976"}]}}, :entities {:hashtags [{:text "WorldCup", :indices [0 9]}], :urls [{:url "https://t.co/PX1cYSCN8h", :expanded_url "https://twitter.com/i/web/status/969721473437970433", :display_url "twitter.com/i/web/status/9…", :indices [102 125]}], :user_mentions [], :symbols []}, :source "<a href=\"http://twittamp.dev2.hu/\" rel=\"nofollow\">TwittAMP</a>", :lang "en", :in_reply_to_user_id_str nil, :id 969721473437970433, :contributors nil, :display_text_range [0 140], :truncated true, :retweeted false, :in_reply_to_user_id nil, :id_str "969721473437970433", :favorited false, :user {:description "The latest news of interest about #history #ancient in one place!", :profile_link_color "ABB8C2", :profile_sidebar_border_color "000000", :profile_image_url "http://pbs.twimg.com/profile_images/881525990123610112/3oJls2gK_normal.jpg", :profile_use_background_image false, :default_profile false, :profile_background_image_url "http://abs.twimg.com/images/themes/theme1/bg.png", :is_translator false, :profile_text_color "000000", :profile_banner_url "https://pbs.twimg.com/profile_banners/881454090244501504/1498999477", :name "History Newz", :profile_background_image_url_https "https://abs.twimg.com/images/themes/theme1/bg.png", :favourites_count 32, :screen_name "History_Newz", :listed_count 171, :profile_image_url_https "https://pbs.twimg.com/profile_images/881525990123610112/3oJls2gK_normal.jpg", :statuses_count 2225, :contributors_enabled false, :following nil, :lang "en", :utc_offset nil, :notifications nil, :default_profile_image false, :profile_background_color "000000", :id 881454090244501504, :follow_request_sent nil, :url nil, :translator_type "none", :time_zone nil, :profile_sidebar_fill_color "000000", :protected false, :profile_background_tile false, :id_str "881454090244501504", :geo_enabled false, :location "Global", :followers_count 36162, :friends_count 1999, :verified false, :created_at "Sun Jul 02 10:06:46 +0000 2017"}, :reply_count 0, :retweet_count 1, :favorite_count 0, :created_at "Fri Mar 02 23:49:50 +0000 2018", :text "#WorldCup Countdown: 16 Weeks to Go - The Magical Magyars, the Best Team Never to Win the World Cup?… https://t.co/PX1cYSCN8h"}, :source "<a href=\"http://twitter.com/download/android\" rel=\"nofollow\">Twitter for Android</a>", :lang "en", :in_reply_to_user_id_str nil, :id 969835918705045504, :contributors nil, :truncated false, :retweeted false, :in_reply_to_user_id nil, :id_str "969835918705045504", :favorited false, :user {:description "✍🎨💕", :profile_link_color "1DA1F2", :profile_sidebar_border_color "C0DEED", :profile_image_url "http://pbs.twimg.com/profile_images/894032388166098945/f-_miJBo_normal.jpg", :profile_use_background_image true, :default_profile true, :profile_background_image_url "", :is_translator false, :profile_text_color "333333", :profile_banner_url "https://pbs.twimg.com/profile_banners/874473957285650432/1507700544", :name "AYAN 🖤NEOGI🖤🖤", :profile_background_image_url_https "", :favourites_count 6906, :screen_name "AyanNeog001", :listed_count 1, :profile_image_url_https "https://pbs.twimg.com/profile_images/894032388166098945/f-_miJBo_normal.jpg", :statuses_count 11182, :contributors_enabled false, :following nil, :lang "en", :utc_offset nil, :notifications nil, :default_profile_image false, :profile_background_color "F5F8FA", :id 874473957285650432, :follow_request_sent nil, :url nil, :translator_type "none", :time_zone nil, :profile_sidebar_fill_color "DDEEF6", :protected false, :profile_background_tile false, :id_str "874473957285650432", :geo_enabled true, :location "🌐", :followers_count 332, :friends_count 1020, :verified false, :created_at "Tue Jun 13 03:50:13 +0000 2017"}, :reply_count 0, :caudal/latency 1941968, :retweet_count 0, :favorite_count 0, :created_at "Sat Mar 03 07:24:36 +0000 2018", :text "RT @History_Newz: #WorldCup Countdown: 16 Weeks to Go - The Magical Magyars, the Best Team Never to Win the World Cup? https://t.co/gJQLuKn…"}
+```
+
+Caudal recibe todos los tweets con la palabra clave `WorldCup` in EDN format, para información especifica acerca de los campos y la información recibida, echa un vistazo a [Twitter API documentation] (https://developer.twitter.com/en/docs/tweets/filter-realtime/overview).
