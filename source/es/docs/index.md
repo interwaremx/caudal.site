@@ -26,7 +26,7 @@ Caudal usa un Estado de aplicación para guardar los datos necesarios para métr
 Obtén los últimos archivos binarios de la distribución de Caudal en la [sección de Descargas](downloads.html)
 ```
 $ wget https://interwaremx.github.io/caudal.docs/downloads/caudal-0.7.14.tar.gz
-$ tar xvfz caudal-0.7.14.tar.gz
+$ tar xzvf caudal-0.7.14.tar.gz
 ```
 
 ## Arrancando
