@@ -6,7 +6,7 @@ Una guía para recuperar y producir estadísticas.
  * Completar [Listeners](lab1.html)
  * Completar [Streamers](lab3.html)
 
-## _Counter_
+## _counter_
 ### Contando eventos
 Esta sección explica como contar cada evento recibido.
 
