@@ -27,13 +27,13 @@ Get the binary file for the lastest Caudal distribution at [downloads section](/
 
 ```#bash
 $ wget https://interwaremx.github.io/caudal.docs/downloads/caudal-0.7.14.tar.gz
-$ tar xvfz caudal-0.7.4.tar.gz
+$ tar xvfz caudal-0.7.14.tar.gz
 ```
 
 ### Running
 Start Caudal server
 
 ```#bash
-cd caudal-0.7.4
-$ bin/run.sh -c config/caudal-config.clj
+cd caudal-0.7.14/
+$ bin/caudal -c config/caudal-config.clj start
 ```
