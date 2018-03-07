@@ -5,7 +5,7 @@ Guía que muestra el uso de Caudal en un ambiente distribuido como se muestra en
 ![caudal cluster](lab6-01.png)
 
 ## Requerimientos
- * Haber completado exitosamente la *Guía 5* [Caudal Integration](lab5.html)
+ * [Caudal Integration](lab5.html)
 
 ## Creando múltiples nodos de Caudal
 
