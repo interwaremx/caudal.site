@@ -23,7 +23,7 @@ Caudal uses an application State in order to store data needed for metrics and s
  * [Java 1.8 (OpenJDK or OracleJDK)](java.html)
 
 ## Installing
-Get the binary file for the lastest Caudal distribution at [downloads section](/downloads)
+Get the binary file for the lastest Caudal distribution at [downloads section](downloads.html)
 
 ```#bash
 $ wget https://interwaremx.github.io/caudal.docs/downloads/caudal-0.7.14.tar.gz
