@@ -369,7 +369,7 @@ Escape character is '^]'.
 {:tx "foo" :metric 15}
 ```
 
-4. Verifica la salida de Caudal, las estadísticas de tu evento inicia su valor usando el archivo guardado:
+Verifica la salida de Caudal, las estadísticas de tu evento inicia su valor usando el archivo guardado:
 ```#bash
 2018-03-07 10:46:17.190 INFO  [clojure-agent-send-pool-2] streams.stateless - {:caudal/created 1520440625185, :mean 26.333333333333332, :caudal/touched 1520441177184, :n 6, :variance 293.88888888888886, :stdev 17.143187827498387, :tx "foo", :caudal/type "welford", :sqrs 1763.3333333333333, :caudal/latency 2455726, :metric 11}
 2018-03-07 10:46:18.382 INFO  [clojure-agent-send-pool-4] streams.stateless - {:caudal/created 1520440625185, :mean 24.71428571428571, :caudal/touched 1520441178381, :n 7, :variance 267.63265306122446, :stdev 16.35948205357445, :tx "foo", :caudal/type "welford", :sqrs 1873.4285714285713, :caudal/latency 944378, :metric 15}
