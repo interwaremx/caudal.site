@@ -23,7 +23,7 @@ Caudal usa un Estado de aplicación para guardar los datos necesarios para métr
  * [Java 1.8 (OpenJDK or OracleJDK)](java.html)
 
 ## Instalando
-Obtén los últimos archivos binarios de la distribución de Caudal en la [sección de Descargas](/downloads)
+Obtén los últimos archivos binarios de la distribución de Caudal en la [sección de Descargas](downloads.html)
 ```
 $ wget https://interwaremx.github.io/caudal.docs/downloads/caudal-0.7.14.tar.gz
 $ tar xvfz caudal-0.7.14.tar.gz
