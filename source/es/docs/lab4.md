@@ -6,12 +6,12 @@ Una guía para recuperar y producir estadísticas.
  * Completar [Listeners](lab1.html)
  * Completar [Streamers](lab3.html)
 
-## Cuenta
+## _Counter_
 ### Contando eventos
 Esta sección explica como contar cada evento recibido.
 
 Crea una nueva configuración en `config/` con el siguiente contenido:
-```config/stats.clj
+```clojure config/stats.clj
 ;; Requires
 (ns caudal.example.stats
   (:require
@@ -24,7 +24,7 @@ Crea una nueva configuración en `config/` con el siguiente contenido:
 (deflistener my-listener [{:type 'mx.interware.caudal.io.tcp-server
                            :parameters {:port        9900
                                         :idle-period 60}}])
-
+;; Streamers
 (defsink stats-streamer 1
   ;; Counts received events
   ;; stores account into State with keyword :my-counter
@@ -37,12 +37,12 @@ Crea una nueva configuración en `config/` con el siguiente contenido:
 ```
 
 Arranca tu configuración usando:
-```#bash
+```
 $ bin/caudal -c config/stats.clj start
 ```
 
 Prueba tu configuración enviando algunos eventos con telnet:
-```#bash
+```
 $ telnet localhost 9900
 Trying ::1...
 Connected to localhost.
@@ -55,13 +55,13 @@ Verifica la salida de Caudal. Observa que cada entrada de evento ha sido decorad
 2018-03-07 09:12:25.853 INFO  [clojure-agent-send-pool-1] streams.stateless - {:tx "foo", :user "bar", :caudal/latency 1291159, :n 1}
 2018-03-07 09:12:58.312 INFO  [clojure-agent-send-pool-2] streams.stateless - {:tx "baz", :user "qux", :caudal/latency 1345733, :n 2}
 ```
-Detén Caudal usando **Ctrl-c**
+Detén Caudal usando `Ctrl-C`
 
 ### Guardar cuenta
-Guarda la cuenta de tus eventos usando **dump-every**.
+Guarda la cuenta de tus eventos usando `dump-every`
 
 Actualiza tu configuración:
-```config/stats.clj
+```clojure config/stats.clj
 
 ;; Requires
 (ns caudal.example.stats
@@ -75,7 +75,7 @@ Actualiza tu configuración:
 (deflistener my-listener [{:type 'mx.interware.caudal.io.tcp-server
                            :parameters {:port        9900
                                         :idle-period 60}}])
-
+;; Streamers
 (defsink stats-streamer 1
   ;; Counts received events
   ;; stores account into State with keyword :my-counter
@@ -88,12 +88,12 @@ Actualiza tu configuración:
 (wire [my-listener] [stats-streamer])
 ```
 Arranca tu configuración usando:
-```#bash
+```
 $ bin/caudal -c config/stats.clj start
 ```
 
 Prueba tu configuración enviando algunos eventos con telnet:
-```#bash
+```
 $ telnet localhost 9900
 Trying ::1...
 Connected to localhost.
@@ -103,13 +103,13 @@ Escape character is '^]'.
 ```
 
 Verifica la salida de Caudal:
-```#bash
+```
 2018-03-07 09:47:10.567 INFO  [clojure-agent-send-pool-1] streams.stateless - {:tx "foo", :user "bar", :caudal/latency 2045889, :n 1}
 2018-03-07 09:47:22.083 INFO  [clojure-agent-send-pool-3] streams.stateless - {:tx "baz", :user "qux", :caudal/latency 578514, :n 2}
 ```
 
-Y trata de leer el contenido del archivo **data/stats/YYYMMdd-my-counter.edn**:
-```#bash
+Y trata de leer el contenido del archivo `data/stats/YYYMMdd-my-counter.edn`:
+```
 $ cat data/stats/$( date +"%Y%m%d" )-my-counter.edn
 {:n 2,
  :caudal/type "dump_every",
@@ -117,14 +117,14 @@ $ cat data/stats/$( date +"%Y%m%d" )-my-counter.edn
  :caudal/touched 1520437642084}
 ```
 
-Detén Caudal usando **Ctrl-c**.
+Detén Caudal usando `Ctrl-C`.
 
 ### Recuperando cuenta
 Para leer tu EDN con el estado de la cuenta es obligatorio cargar el archivo usando **scheduler**.
 
 Actualiza tu configuración y usa el streamer **deflistener** como sigue:
 
-```config/stats.clj
+```clojure config/stats.clj
 ;; Requires
 (ns caudal.example.stats
   (:require
@@ -147,7 +147,7 @@ Actualiza tu configuración y usa el streamer **deflistener** como sigue:
                                                  :date-fmt "yyyyMMdd"      ;; Date format
                                                  :key-name "my-counter"}}] ;; Key name to retrieve your file and put in State
                          }])
-
+;; Streamers
 (defsink stats-streamer 1
   ;; Counts received events
   ;; stores account into State with keyword :my-counter
@@ -162,11 +162,11 @@ Actualiza tu configuración y usa el streamer **deflistener** como sigue:
 
 Arranca tu configuración:
 ```#bash
-$ bin/start-caudal.sh -c ./config/stats.clj
+$ bin/caudal -c config/stats.clj start
 ```
 
 Prueba tu configuración enviando algunos eventos con telnet:
-```#bash
+```
 $ telnet localhost 9900
 Trying ::1...
 Connected to localhost.
@@ -176,19 +176,18 @@ Escape character is '^]'.
 ```
 
 Verifica la salida de Caudal, el contador de tu evento inicia su valor usando el archivo guardado:
-```#bash
+```
 2018-03-07 10:15:56.653 INFO  [clojure-agent-send-pool-2] streams.stateless - {:tx "foo", :user "bar", :caudal/latency 3657243, :n 3}
 2018-03-07 10:16:07.405 INFO  [clojure-agent-send-pool-4] streams.stateless - {:tx "baz", :user "qux", :caudal/latency 942940, :n 4}
 ```
-Detén Caudal usando **Ctrl-c**.
+Detén Caudal usando `Ctrl-C`.
 
-## Desviación Estándar
+## _welford_
 ### Estadísticas de eventos
-Esta sección explica como obtener media, varianza y desviación estándar desde los eventos.
+Esta sección explica como obtener media, varianza y desviación estándar desde los eventos usando **welford**.
 
  Crea un nuevo archivo de configuración `config/` con el contenido que sigue:
-```config/stdev.clj
-
+```clojure config/stdev.clj
 ;; Requires
 (ns caudal.example.stats
   (:require
@@ -201,7 +200,7 @@ Esta sección explica como obtener media, varianza y desviación estándar desde
 (deflistener my-listener [{:type 'mx.interware.caudal.io.tcp-server
                            :parameters {:port        9900
                                         :idle-period 60}}])
-
+;; Streamers
 (defsink stats-streamer 1
   ;; Welford received events
   ;; stores stats of events into State with keyword :my-stdev
@@ -214,11 +213,11 @@ Esta sección explica como obtener media, varianza y desviación estándar desde
 ```
 
 Arranca tu configuración usando:
-```#bash
+```
 $ bin/caudal -c config/stdev.clj start
 ```
 Prueba tu configuración enviando algunos eventos con telnet:
-```#bash
+```
 $ telnet localhost 9900
 Trying ::1...
 Connected to localhost.
@@ -231,7 +230,7 @@ Escape character is '^]'.
 ```
 
 Verifica la salida de Caudal. Observa que cada entrada de evento ha sido decorada con algunos atributos adicionales:
-```#bash
+```
 2018-03-07 10:32:02.620 INFO  [clojure-agent-send-pool-1] streams.stateless - {:caudal/created 1520440322614, :mean 13, :caudal/touched 1520440322614, :n 1, :variance 0.0, :stdev 0.0, :tx "foo", :caudal/type "welford", :sqrs 0.0, :caudal/latency 3081567, :metric 13}
 2018-03-07 10:32:13.503 INFO  [clojure-agent-send-pool-2] streams.stateless - {:caudal/created 1520440322614, :mean 18.0, :caudal/touched 1520440333502, :n 2, :variance 25.0, :stdev 5.0, :tx "bar", :caudal/type "welford", :sqrs 50.0, :caudal/latency 1206392, :metric 23}
 2018-03-07 10:32:29.653 INFO  [clojure-agent-send-pool-3] streams.stateless - {:caudal/created 1520440322614, :mean 16.0, :caudal/touched 1520440349652, :n 3, :variance 24.666666666666668, :stdev 4.96655480858378, :tx "baz", :caudal/type "welford", :sqrs 74.0, :caudal/latency 1280853, :metric 12}
@@ -239,13 +238,13 @@ Verifica la salida de Caudal. Observa que cada entrada de evento ha sido decorad
 2018-03-07 10:32:38.733 INFO  [clojure-agent-send-pool-5] streams.stateless - {:caudal/created 1520440322614, :mean 29.4, :caudal/touched 1520440358732, :n 5, :variance 296.24, :stdev 17.21162397916013, :tx "foo", :caudal/type "welford", :sqrs 1481.2, :caudal/latency 1266055, :metric 55}
 ```
 
-Detén Caudal usando **Ctrl-c**.
+Detén Caudal usando `Ctrl-C`.
 
 ### Guardar estadísticas
 Guarda las estadísticas de tus eventos usando **dump-every**.
 
 Actualiza tu configuración:
-```config/stdev.clj
+```clojure config/stdev.clj
 
 ;; Requires
 (ns caudal.example.stats
@@ -259,7 +258,7 @@ Actualiza tu configuración:
 (deflistener my-listener [{:type 'mx.interware.caudal.io.tcp-server
                            :parameters {:port        9900
                                         :idle-period 60}}])
-
+;; Streamers
 (defsink stats-streamer 1
   ;; Welford received events
   ;; stores stats of events into State with keyword :my-stdev
@@ -272,12 +271,12 @@ Actualiza tu configuración:
 (wire [my-listener] [stats-streamer])
 ```
 Arranca tu configuración usando:
-```#bash
+```
 $ bin/caudal -c config/stdev.clj start
 ```
 
 Prueba tu configuración enviando algunos eventos con telnet:
-```#bash
+```
 $ telnet localhost 9900
 Trying ::1...
 Connected to localhost.
@@ -290,7 +289,7 @@ Escape character is '^]'.
 ```
 
 Verifica la salida de Caudal:
-```#bash
+```
 2018-03-07 10:37:05.194 INFO  [clojure-agent-send-pool-1] streams.stateless - {:caudal/created 1520440625185, :mean 13, :caudal/touched 1520440625185, :n 1, :variance 0.0, :stdev 0.0, :tx "foo", :caudal/type "welford", :sqrs 0.0, :caudal/latency 1637940, :metric 13}
 2018-03-07 10:37:05.197 INFO  [clojure-agent-send-pool-2] streams.stateless - {:caudal/created 1520440625185, :mean 18.0, :caudal/touched 1520440625196, :n 2, :variance 25.0, :stdev 5.0, :tx "bar", :caudal/type "welford", :sqrs 50.0, :caudal/latency 12266143, :metric 23}
 2018-03-07 10:37:05.198 INFO  [clojure-agent-send-pool-3] streams.stateless - {:caudal/created 1520440625185, :mean 16.0, :caudal/touched 1520440625198, :n 3, :variance 24.666666666666668, :stdev 4.96655480858378, :tx "baz", :caudal/type "welford", :sqrs 74.0, :caudal/latency 1499147, :metric 12}
@@ -298,7 +297,7 @@ Verifica la salida de Caudal:
 2018-03-07 10:37:06.021 INFO  [clojure-agent-send-pool-5] streams.stateless - {:caudal/created 1520440625185, :mean 29.4, :caudal/touched 1520440626020, :n 5, :variance 296.24, :stdev 17.21162397916013, :tx "foo", :caudal/type "welford", :sqrs 1481.2, :caudal/latency 1632950, :metric 55}
 ```
 
-Y trata de leer el contenido del archivo **/data/stats/YYYMMdd-my-stdev.edn**:
+Y trata de leer el contenido del archivo `/data/stats/YYYMMdd-my-stdev.edn`:
 ```#bash
 $ cat data/stats/$( date +"%Y%m%d" )-my-stdev.edn
 {:caudal/created 1520440625185,
@@ -310,14 +309,14 @@ $ cat data/stats/$( date +"%Y%m%d" )-my-stdev.edn
  :caudal/type "dump_every",
  :sqrs 1481.2}
 ```
-Detén Caudal usando **Ctrl-c**.
+Detén Caudal usando `Ctrl-C`.
 
 ### Recuperando estadísticas
 
 Para leer tu EDN con el estado de las estadísticas es obligatorio cargar el archivo usando **scheduler**.
 
 Actualice tu archivo de configuración y usa el streamer **deflistener** como sigue:
-```config/stats.clj
+```clojure config/stats.clj
 
 ;; Requires
 (ns caudal.example.stats
@@ -341,7 +340,7 @@ Actualice tu archivo de configuración y usa el streamer **deflistener** como si
                                                  :date-fmt "yyyyMMdd"      ;; Date format
                                                  :key-name "my-stdev"}}]   ;; Key name to retrieve your file and put in State
                          }])
-
+;; Streamers
 (defsink stats-streamer 1
   ;; Welford received events
   ;; stores stats of events into State with keyword :my-stdev
@@ -355,12 +354,12 @@ Actualice tu archivo de configuración y usa el streamer **deflistener** como si
 ```
 
 Arranca tu configuración usando:
-```#bash
+```
 $ bin/caudal -c config/stdev.clj start
 ```
 
 Prueba tu configuración enviando algunos eventos con telnet:
-```#bash
+```
 $ telnet localhost 9900
 Trying ::1...
 Connected to localhost.
