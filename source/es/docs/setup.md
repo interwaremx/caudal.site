@@ -65,7 +65,7 @@ $
 ```
 7. Detén Caudal usando `Ctrl-C`
 
-## Instalación por git repositorio
+## Instalación desde las fuentes
 Puedes iniciar una configuración de Caudal desde las fuentes, gratuitamente desde [github](https://github.com/interwaremx/caudal).
 
 ### Descargar
