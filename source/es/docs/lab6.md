@@ -4,13 +4,8 @@ Título: Lab 6 - Clustering
  * [Caudal Integration](lab5.html)
  * [Streamers](lab3.html)
  
- 
- 
 Guía que muestra el uso de Caudal en un ambiente distribuido como se muestra en la siguiente imagen.
 ![caudal cluster](../../docs/lab6-01.svg)
-
-
-
 
 ## Creando múltiples nodos de Caudal
 
