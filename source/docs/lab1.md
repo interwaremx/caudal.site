@@ -32,6 +32,7 @@ In [Configuration](configuration.html) we used `deflistener` macro to define a T
                    :parameters {:port        9900 
                                 :idle-period 60}}])
 ```
+
 | Parameter     | Description   |
 | ------------- | ------------- |
 | :port         | Number of port (1-65535) to listen events. Incoming events are received in [EDN](https://learnxinyminutes.com/docs/edn/) format.|
@@ -61,8 +62,8 @@ Write following configuration in `config/` directory:
 ;; Wire
 (wire [tcp] [example])
 ```
-Run Caudal passing this file as config:
 
+Run Caudal passing this file as config:
 ```
 $ bin/caudal -c config/example-tcp.clj start
 ```
@@ -87,6 +88,7 @@ Verify generated log for new incoming event:
 ```
 
 ### Tailer
+
 Reads new entry lines from a file, like `tail` command.
 ```clojure
 (deflistener tailer [{:type 'mx.interware.caudal.io.tailer-server
@@ -96,12 +98,12 @@ Reads new entry lines from a file, like `tail` command.
                                    :delta        200
                                    :from-end     true
                                    :reopen       true
-                                   :buffer-size  1024)}])
+                                   :buffer-size  1024}}])
 ```
 | Parameter     | Description   |
 | ------------- | ------------- |
 | :parser       | Function that receives a new line and returns an EDN. `read-string` is util if your log are written in EDN. |
-| :inputs       | Map with :directory to reach files and a :wildcard to filter the files to tail|
+| :inputs       | Map with `:directory` to reach files and a `:wildcard` to filter the files to tail|
 | :delta        | Number with refresh file time in milliseconds |
 | :from-end     | Boolean, if true ignores previous entries and reads new modifications only, false to read entire file|
 | :reopen       | Boolean, if true reopen file(s) if are deleted, false loses file |
@@ -110,7 +112,6 @@ Reads new entry lines from a file, like `tail` command.
 #### Configuration
 
 Write following configuration in `config/` directory:
-
 ```clojure config/example-tailer.clj
 ;; Requires
 (ns caudal.example.tcp
@@ -136,8 +137,8 @@ Write following configuration in `config/` directory:
 ;; Wire
 (wire [tailer] [example])
 ```
-Run Caudal passing this file as config:
 
+Run Caudal passing this file as config:
 ```
 $ bin/caudal -c config/example-tailer.clj start
 ```
@@ -217,7 +218,7 @@ If your application was created successfully, you should see the following scree
 
 ![MyCaudalExample App](twitter-03.jpg)
 
-Go to `Keys and Access Token` tab to obtain your Consumer Key and Consumer Secret. Click in `Create my access token` to obtain your `Token` and `Token Secret Pair`
+Go to `Keys and Access Token` tab to obtain your `Consumer Key` and `Consumer Secret`. Click in `Create my access token` to obtain your `Token` and `Token Secret Pair`
 
 ![Keys and Secrets](twitter-04.jpg)
 
