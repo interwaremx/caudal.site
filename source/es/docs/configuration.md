@@ -3,7 +3,7 @@ title: Configuración
 
 ## Archivo de Configuración
 
-Caudal usa uno o varios archivos de configuration con la siguiente estructura:
+Caudal usa uno o varios archivos de configuración con la siguiente estructura:
 ```clojure config/caudal-config.clj
 
 ;; Requires
@@ -30,19 +30,18 @@ Caudal usa uno o varios archivos de configuration con la siguiente estructura:
 
 * **Requires** carga bibliotecas. Estas bibliotecas contienen funciones de Clojure a ser usadas. Vea la [sección de API](https://interwaremx.github.io/caudal.docs/api) para más información.
 * **Listeners** define mecanismos para capturar eventos.
-* **Sinks** define las funciones analizadoras a ser aplicadas a cada evento dentro del flujo de datos.
+* **Streamers** define las funciones analizadoras a ser aplicadas a cada evento dentro del flujo de datos.
 * **Wire** rutea los eventos adquiridos por un listener a un analizador.
 
 ## Creando una Configuración Simple
-
-Usando tu editor favorito crea un archivo llamado ** classifier.clj** dentro del directorio **config/**:
+Usando tu editor favorito crea un archivo llamado **classifier.clj** dentro del directorio **config/**:
 ```
 $ cd caudal-0.7.14
 $ emacs config/classifier.clj
 ```
 
-Pon el siguiente contenido en tu ** classifier.clj**:
-```clojure config/caudal-config.clj
+Pon el siguiente contenido en tu **classifier.clj**:
+```clojure config/clasiffier.clj
 
 ;; Requires
 (ns caudal.config.basic
@@ -84,18 +83,18 @@ $ telnet localhost 9900
 Trying ::1...
 Connected to localhost.
 Escape character is '^]'.
-{:foo :bar}
-{:foo :bar}
-{:foo :bar}
-{:foo :bar}
-{:foo :bar}
-{:foo :bar}
-{:foo :bar}
-{:foo :bar}
-{:foo :bar}
-{:foo :bar}
-{:foo :bar}
-{:foo :bar}
+{:foo :foo}
+{:foo :foo}
+{:foo :foo}
+{:foo :foo}
+{:foo :foo}
+{:foo :foo}
+{:foo :foo}
+{:foo :foo}
+{:foo :foo}
+{:foo :foo}
+{:foo :foo}
+{:foo :foo}
 ```
 
 En la terminal de Caudal, tu podrías ver la siguiente salida:
@@ -120,11 +119,12 @@ En la terminal de Caudal, tu podrías ver la siguiente salida:
 2018-01-01 22:44:30.234 INFO  [clojure-agent-send-pool-1] streams.stateless - {:foo :foo, :caudal/latency 276567, :event-counter 18, :class "event", :n 9}
 2018-01-01 22:44:47.155 INFO  [clojure-agent-send-pool-2] streams.stateless - {:foo :foo, :caudal/latency 298137, :event-counter 19, :class "odd", :n 10}
 ```
-En la salida de Caudal. Observa que cada entrada de evento ha sido decorada con atributos adicionales.
 
-Originalmente,`caudal-config.clj` cuenta cada evento y coloca el número en el atributo `:event-counter` 
+Observa que cada entrada de evento ha sido decorado con atributos adicionales.
 
-En `classifier.clj` decide si el evento entrante es par o impar y pone un nuevo atributo `:class` usando `smap`, luego usa by divide el flujo de eventos por `:class` y finalmente con `counter` cuenta cada evento nuevamente, pero usando su `:class`
+Originalmente, **caudal-config.clj** cuenta cada evento y coloca el número en el atributo **:event-counter** 
+
+En **classifier.clj** decide si el evento entrante es par o impar y pone un nuevo atributo **:class** usando **smap**, luego usa **by** que divide el flujo de eventos por **class** y finalmente con **counter** cuenta cada evento nuevamente, pero usando su **:class**
 
 
 
