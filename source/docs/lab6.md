@@ -14,7 +14,7 @@ Change current directory to the **caudal-labs** project parent and make two copi
 
 ```
 $ mkdir cluster
-$ wget http://localhost:4000/caudal.docs/downloads/caudal-0.7.14.tar.gz
+$ wget https://interwaremx.github.io/caudal.docs/downloads/caudal-0.7.14.tar.gz
 $ mkdir caudal-balancer && tar xzvf caudal-0.7.14.tar.gz -C caudal-balancer --strip-components 1
 $ mkdir caudal-1 && tar xzvf caudal-0.7.14.tar.gz -C caudal-1 --strip-components 1
 $ mkdir caudal-2 && tar xzvf caudal-0.7.14.tar.gz -C caudal-2 --strip-components 1
