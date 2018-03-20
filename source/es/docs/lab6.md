@@ -12,7 +12,7 @@ Guía que muestra el uso de Caudal en un ambiente distribuido como se muestra en
 1. Cambia del directorio del proyecto **caudal-labs**  a su padre y crea tres copias de él:
 ```txt
 mkdir cluster
-$ wget wget https://interwaremx.github.io/caudal.docs/downloads/caudal-0.7.14.tar.gz
+$ wget https://interwaremx.github.io/caudal.docs/downloads/caudal-0.7.14.tar.gz
 $ mkdir caudal-balancer && tar xzvf caudal-0.7.14.tar.gz -C caudal-balancer --strip-components 1
 $ mkdir caudal-1 && tar xzvf caudal-0.7.14.tar.gz -C caudal-1 --strip-components 1
 $ mkdir caudal-2 && tar xzvf caudal-0.7.14.tar.gz -C caudal-2 --strip-components 1
