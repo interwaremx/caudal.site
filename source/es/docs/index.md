@@ -13,7 +13,7 @@ Un evento es cualquier estructura de datos y es pasada como un Mapa Inmutable de
 ## ¿Qué es un _Listener_ ?
 Un _Listener_ es un mecanismo para poner información dentro de Caudal. Cualquier cosa puede ser una fuente de eventos: bitácoras de aplicaciones, un chat o Twitter. Caudal viene con varios _Listeners_ listos para usar.
 
-## ¿Qué es son los _Streamers_ ?
+## ¿Qué son los _Streamers_ ?
 Los _Streamers_ son funciones que serán aplicadas a cada evento dentro del flujo de datos y pueden ser compuestas y combinadas para enriquecer el flujo de datos.
 
 ## ¿Qué es el Estado?
