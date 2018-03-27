@@ -25,7 +25,7 @@ Caudal uses an application State in order to store data needed for metrics and s
 ## Installing
 Get the binary file for the lastest Caudal distribution at [downloads section](downloads.html)
 
-```#bash
+```
 $ wget https://interwaremx.github.io/caudal.docs/downloads/caudal-0.7.14.tar.gz
 $ tar xzvf caudal-0.7.14.tar.gz
 ```
@@ -33,7 +33,7 @@ $ tar xzvf caudal-0.7.14.tar.gz
 ### Running
 Start Caudal server
 
-```#bash
+```
 cd caudal-0.7.14/
 $ bin/caudal -c config/caudal-config.clj start
 ```
