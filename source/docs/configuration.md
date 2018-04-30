@@ -30,7 +30,7 @@ Caudal uses one or many configuration files with the following structure:
 
 * **Requires** section loads libs. These libs contains Clojure functions to be used. See [API section](../api) for more information.
 * **Listeners** section define mechanisms to retrieve events.
-* **Sinks** section define streamers functions to be applied to each event into data stream.
+* **Streamers** section define streamer functions to be applied to each event into data stream.
 * **Wire** section routes listener acquired event to a streamers.
 
 ## Creating a Simple Configuration
