@@ -1,7 +1,7 @@
 title: Instalación
 ---
 
-Instalar Caudal es bastante sencillo. Siempre, necesitas tener instaladas algunas otras cosas primero:
+Instalar Caudal es bastante sencillo. Necesitas tener instaladas algunas otras cosas primero:
 
 ## Requerimientos
  * [Java 1.8 (OpenJDK or OracleJDK)](java.html)
