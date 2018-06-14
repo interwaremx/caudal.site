@@ -28,7 +28,7 @@ Caudal usa uno o varios archivos de configuración con la siguiente estructura:
 (wire [tcp] [example])
 ```
 
-* **Requires** carga bibliotecas. Estas bibliotecas contienen funciones de Clojure a ser usadas. Vea la [sección de API](https://interwaremx.github.io/caudal.docs/api) para más información.
+* **Requires** carga bibliotecas que contienen funciones de Clojure a ser usadas. Vea la [sección de API](https://interwaremx.github.io/caudal.docs/api) para más información.
 * **Listeners** define mecanismos para capturar eventos.
 * **Streamers** define las funciones analizadoras a ser aplicadas a cada evento dentro del flujo de datos.
 * **Wire** rutea los eventos adquiridos por un listener a un analizador.
