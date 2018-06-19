@@ -1,4 +1,4 @@
-title: Lab 2 - Parsing
+title: Lab 2 - Parsers
 ---
 
 Some Caudal Listeners require a parser function to convert custom data to EDN. 
