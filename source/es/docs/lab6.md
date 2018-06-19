@@ -1,4 +1,4 @@
-Título: Lab 6 - Clustering
+title: Lab 6 - Clustering
 ---
 ## Requerimientos
  * [Caudal Integration](lab5.html)
