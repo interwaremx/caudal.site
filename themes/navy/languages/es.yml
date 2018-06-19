@@ -24,8 +24,8 @@ sidebar:
     configuration: Configuración
 
     labs: Guías
-    lab1: Instalación
-    lab2: Escuchas y Parseo
+    lab1: Escuchas
+    lab2: Parseo
     lab3: Streamers
     lab4: Estadísticas
     lab5: Integración
