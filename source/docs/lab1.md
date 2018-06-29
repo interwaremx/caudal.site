@@ -182,6 +182,20 @@ Catch log outputs using Log4j framework
 | :port         | Number of port (1-65535) to listen events. Incoming events are received in Log4J protocol.|
 | :parser       | Function that receives message part of Log4J event and return an EDN. |
 
+### Telegram
+Catch messages from Telegram
+
+```clojure
+(deflistener telegram [{:type 'mx.interware.caudal.io.telegram
+                        :parameters {:token "BOT-TOKEN"
+                                     :parser text-parser-fn}}])
+
+```
+| Parameter     | Description   |
+| ------------- | ------------- |
+| :token        | Bot Token string dispatched by Telegram's @BotFather.|
+| :parser       | Function that receives text message writted in chat and return an EDN. |
+
 ### Twitter
 Reads tweets through Twitter API.
 ```clojure
