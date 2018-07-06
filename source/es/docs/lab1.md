@@ -182,6 +182,20 @@ Captura el log de slida usando el framework Log4j.
 | :port         | Número del puerto (1-65535) para escuchar eventos. Eventos de entrada son recibidos en el protocolo Log4j |
 | :parser       | Funcion que recibe el mensaje del evento de Log4j y returna un EDN. |
 
+### Telegram
+Captura mensajes desde Telegram.
+
+```clojure
+(deflistener telegram [{:type 'mx.interware.caudal.io.telegram
+                        :parameters {:token "BOT-TOKEN"
+                                     :parser text-parser-fn}}])
+
+```
+| Parameter     | Description   |
+| ------------- | ------------- |
+| :token        | Cadena Bot Token despachada mediante el @BotFather de Telegram.|
+| :parser       | Función opcional que recibe el texto escrito en el chat y devuelve un EDN. |
+
 ### Twitter
 Lee tweets desde la Twitter API.
 ```clojure
