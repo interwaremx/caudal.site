@@ -157,7 +157,7 @@ Verify generated log for new incoming event:
 ```
 
 ### Syslog
-Capture log outputs using Syslog protocol
+Capture log outputs using Syslog protocol.
 ```clojure
 (deflistener syslog [{:type 'mx.interware.caudal.io.syslog-server
                       :parameters {:port 1111
@@ -169,7 +169,7 @@ Capture log outputs using Syslog protocol
 | :parser       | Function that receives message part of Syslog event and return an EDN. |
 
 ### Log4j
-Catch log outputs using Log4j framework
+Catch log outputs using Log4j framework.
 
 ```clojure
 (deflistener log4j [{:type 'mx.interware.caudal.io.log4j-server
@@ -183,7 +183,7 @@ Catch log outputs using Log4j framework
 | :parser       | Function that receives message part of Log4J event and return an EDN. |
 
 ### Telegram
-Catch messages from Telegram
+Catch messages from Telegram chat.
 
 ```clojure
 (deflistener telegram [{:type 'mx.interware.caudal.io.telegram
