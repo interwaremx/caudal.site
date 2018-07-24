@@ -1,6 +1,6 @@
 title: Lab 2 - Parseo
 ---
-Algunos Listeners de Caudal requieren una función de análisis para convertir datos personalizados a EDN.
+Algunos Listeners de Caudal requieren una función de *parsing* para convertir datos personalizados a EDN.
 
 ## Requerimientos
  * Haber completado satisfactoriamente el **Lab 1**: [Listeners](lab1.html)
