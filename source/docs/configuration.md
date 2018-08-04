@@ -3,7 +3,7 @@ title: Configuration
 
 ## Configuration File
 
-Caudal uses one or many configuration files with the following structure:
+Caudal uses one or many configuration files with the following DSL (Domain-specific language):
 ```clojure config/caudal-config.clj
 ;; Requires
 (ns caudal.config.basic
