@@ -105,8 +105,8 @@ Reads new entry lines from a file, like `tail` command.
 | :parser       | Function that receives a new line and returns an EDN. `read-string` is util if your log are written in EDN. |
 | :inputs       | Map with `:directory` to reach files and a `:wildcard` to filter the files to tail|
 | :delta        | Number with refresh file time in milliseconds |
-| :from-end     | Boolean, if true ignores previous entries and reads new modifications only, false to read entire file|
-| :reopen       | Boolean, if true reopen file(s) if are deleted, false loses file |
+| :from-end     | Boolean, if `true` ignores previous entries and reads new modifications only, `false` to read entire file|
+| :reopen       | Boolean, if `true` reopen file(s) if are deleted, `false` loses file |
 | :buffer-size  | Number indicating bytes readed each delta time |
 
 #### Configuration
